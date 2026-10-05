@@ -39,6 +39,8 @@
   --color-cyan: var(--vz-cyan);
   --color-violet: var(--vz-violet);
   --color-magenta: var(--vz-magenta);
+  --color-emerald: var(--vz-emerald);
+  --color-gold: var(--vz-gold);
   --color-glass: var(--glass);
   --color-glass-border: var(--glass-border);
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
@@ -49,29 +51,31 @@
   --radius: 1.1rem;
 
   /* Dark Neon */
-  --background: oklch(0.16 0.045 275);
+  --background: oklch(0.15 0.025 265);
   --foreground: oklch(0.97 0.01 280);
-  --card: oklch(0.21 0.05 277);
+  --card: oklch(0.2 0.035 270);
   --card-foreground: oklch(0.97 0.01 280);
-  --popover: oklch(0.19 0.05 277);
+  --popover: oklch(0.18 0.035 270);
   --popover-foreground: oklch(0.97 0.01 280);
-  --primary: oklch(0.66 0.24 305);
+  --primary: oklch(0.54 0.25 293);
   --primary-foreground: oklch(0.99 0.005 280);
-  --secondary: oklch(0.27 0.06 280);
+  --secondary: oklch(0.25 0.04 275);
   --secondary-foreground: oklch(0.97 0.01 280);
-  --muted: oklch(0.26 0.05 280);
-  --muted-foreground: oklch(0.72 0.035 285);
-  --accent: oklch(0.72 0.17 205);
-  --accent-foreground: oklch(0.16 0.045 275);
-  --destructive: oklch(0.62 0.24 20);
+  --muted: oklch(0.24 0.035 275);
+  --muted-foreground: oklch(0.72 0.03 280);
+  --accent: oklch(0.88 0.15 199);
+  --accent-foreground: oklch(0.15 0.025 265);
+  --destructive: oklch(0.63 0.24 25);
   --destructive-foreground: oklch(0.99 0.005 280);
   --border: oklch(0.85 0.1 300 / 18%);
   --input: oklch(0.85 0.1 300 / 22%);
-  --ring: oklch(0.7 0.2 305);
+  --ring: oklch(0.54 0.25 293);
 
-  --vz-cyan: oklch(0.79 0.16 203);
-  --vz-violet: oklch(0.58 0.26 292);
+  --vz-cyan: oklch(0.88 0.15 199);
+  --vz-violet: oklch(0.54 0.25 293);
   --vz-magenta: oklch(0.7 0.28 330);
+  --vz-emerald: oklch(0.7 0.15 163);
+  --vz-gold: oklch(0.83 0.15 85);
 
   --glass: oklch(0.99 0.01 280 / 6%);
   --glass-border: oklch(0.9 0.08 300 / 20%);
@@ -304,4 +308,43 @@
   .anim-rise {
     animation: vz-rise 0.01s linear both;
   }
+}
+
+/* ---------- Campus radar ---------- */
+@keyframes vz-radar-ping {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+@keyframes vz-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0) rotate(-4deg); }
+  50% { transform: translate(-50%, -50%) translateY(-8px) rotate(4deg); }
+}
+@keyframes vz-sweep {
+  to { transform: rotate(360deg); }
+}
+@utility anim-radar-ping {
+  animation: vz-radar-ping 3.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+@utility anim-float {
+  animation: vz-float 3.6s ease-in-out infinite;
+}
+@utility anim-sweep {
+  animation: vz-sweep 6s linear infinite;
+}
+@utility bg-radar-grid {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 50% 50%, oklch(0.54 0.25 293 / 22%), transparent 60%),
+    linear-gradient(oklch(0.88 0.15 199 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.88 0.15 199 / 7%) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px, 28px 28px;
+}
+@utility bg-radar-sweep {
+  background-image: conic-gradient(from 0deg, oklch(0.88 0.15 199 / 28%), transparent 22%);
+}
+@utility bg-gradient-gold {
+  background-image: linear-gradient(120deg, var(--vz-gold), oklch(0.7 0.18 55));
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-radar-ping, .anim-float, .anim-sweep { animation: none; }
 }
