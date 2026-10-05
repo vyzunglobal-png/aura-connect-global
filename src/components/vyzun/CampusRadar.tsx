@@ -10,7 +10,7 @@ const TRINKETS = [
 
 const STORES = [
   { name: "Campus Café", x: 54, y: 40 },
-  { name: "Late Night Bites", x: 14, y: 50 },
+  { name: "Late Night Bites", x: 26, y: 48 },
 ];
 
 export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
