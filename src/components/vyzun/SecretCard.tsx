@@ -16,11 +16,13 @@ const TIERS: { price: string; title: string; unlocks: string }[] = [
 ];
 
 function useCountdown(createdAt: number) {
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
+    setNow(Date.now());
     const t = window.setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
   }, []);
+  if (now === null) return { left: DAY, label: "--:--:--" };
   const left = Math.max(0, createdAt + DAY - now);
   const h = Math.floor(left / 3_600_000);
   const m = Math.floor((left % 3_600_000) / 60_000);
