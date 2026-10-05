@@ -1,23 +1,25 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Flag, Ghost, ImagePlus, MessageCircle, Phone, Send, Trash2, Video, X } from "lucide-react";
+import { ImagePlus, MessageCircle, Phone, Radar, Video, X } from "lucide-react";
 import { REACTIONS, useVyzun, type ReactionKey } from "@/lib/vyzun-store";
 import { cn } from "@/lib/utils";
 import { DirectChatsSheet } from "@/components/vyzun/DirectChatsSheet";
+import { SecretCard } from "@/components/vyzun/SecretCard";
+import { CampusRadar } from "@/components/vyzun/CampusRadar";
+import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
 
 export const Route = createFileRoute("/secrets/")({
   head: () => ({
     meta: [
-      { title: "VYZUN Secrets — Anonymous Inbox & Vibe Feed" },
+      { title: "VYZUN Secrets — Anonymous Inbox, Vibe Feed & Campus Map" },
       {
         name: "description",
-        content:
-          "Receive anonymous secrets, reply safely and post to the Vibe Feed on VYZUN. Moderated, mobile-first and free.",
+        content: "Get anonymous secrets, reply privately, post to the Vibe Feed and explore your campus radar map on VYZUN.",
       },
-      { property: "og:title", content: "VYZUN Secrets — Anonymous Inbox & Vibe Feed" },
+      { property: "og:title", content: "VYZUN Secrets — Anonymous Inbox, Vibe Feed & Campus Map" },
       {
         property: "og:description",
-        content: "Anonymous messages, secret replies and the VYZUN Vibe Feed.",
+        content: "Anonymous secrets that burn in 24 hours, the Vibe Feed and a live campus radar.",
       },
     ],
   }),
@@ -26,12 +28,11 @@ export const Route = createFileRoute("/secrets/")({
 
 function SecretsPage() {
   const { state, update } = useVyzun();
-  const [tab, setTab] = useState<"inbox" | "feed">("inbox");
+  const [tab, setTab] = useState<"inbox" | "feed" | "map">("inbox");
   const [draft, setDraft] = useState("");
   const [anon, setAnon] = useState(true);
-  const [replyTo, setReplyTo] = useState<string | null>(null);
-  const [reply, setReply] = useState("");
   const [chatsOpen, setChatsOpen] = useState(false);
+  const [paid, setPaid] = useState<PaidAction | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -93,27 +94,40 @@ function SecretsPage() {
 
   return (
     <div className="pb-36">
-      <header className="sticky top-0 z-30 bg-background/75 px-5 py-4 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 bg-background/75 px-5 py-4 backdrop-blur-md">
         <div className="flex items-center justify-between">
-          <Link
-            to="/secrets/chat"
-            className="flex items-center gap-2 rounded-full bg-gradient-vyzun px-4 py-2 text-sm font-semibold text-primary-foreground tap active:tap-active"
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            <span aria-hidden>👻 </span>SECRETS
+          </h1>
+          <button
+            onClick={() => setTab("map")}
+            aria-label="Open campus map"
+            className={cn(
+              "grid h-11 w-11 place-items-center rounded-2xl border border-glass-border bg-background/50 shadow-[var(--glow-cyan)] tap active:tap-active",
+              tab === "map" && "bg-gradient-vyzun text-primary-foreground",
+            )}
           >
-            <Ghost className="h-4 w-4" /> Secret Chat
-          </Link>
-          <h1 className="font-display text-lg font-semibold">Secrets</h1>
+            <Radar className="h-5 w-5" />
+          </button>
         </div>
-        <div className="mt-4 flex gap-2">
-          {(["inbox", "feed"] as const).map((t) => (
+        <div className="mt-4 grid grid-cols-3 gap-1 rounded-2xl border border-glass-border bg-background/40 p-1">
+          {(
+            [
+              ["inbox", "Anonymous Inbox"],
+              ["feed", "Vibe Feed"],
+              ["map", "Campus Map"],
+            ] as const
+          ).map(([t, label]) => (
             <button
               key={t}
               onClick={() => setTab(t)}
+              aria-pressed={tab === t}
               className={cn(
-                "flex-1 rounded-xl border border-glass-border py-2 text-sm tap active:tap-active",
+                "rounded-xl py-2 text-xs font-semibold text-muted-foreground transition-colors",
                 tab === t && "bg-gradient-vyzun text-primary-foreground",
               )}
             >
-              {t === "inbox" ? "Anonymous Inbox" : "Vibe Feed"}
+              {label}
             </button>
           ))}
         </div>
@@ -123,76 +137,37 @@ function SecretsPage() {
         {tab === "inbox" && (
           <section className="space-y-3">
             {state.secrets.length === 0 && (
-              <p className="glass-card p-6 text-center text-sm text-muted-foreground">
-                No secrets yet. Share your anonymous link from Secret Chat.
-              </p>
+              <div className="glass-card p-6 text-center">
+                <p className="text-sm text-muted-foreground">No secrets yet. Share your link to get anonymous notes.</p>
+                <button
+                  onClick={async () => {
+                    const url = `${window.location.origin}/secrets`;
+                    const text = "Send me an anonymous secret on VYZUN 👻";
+                    if (navigator.share) await navigator.share({ text, url }).catch(() => {});
+                    else await navigator.clipboard?.writeText(`${text} ${url}`);
+                  }}
+                  className="mt-4 rounded-xl bg-gradient-vyzun px-4 py-2.5 text-sm font-semibold text-primary-foreground tap active:tap-active"
+                >
+                  Share my secret link
+                </button>
+              </div>
             )}
             {state.secrets.map((m) => (
-              <article key={m.id} className="glass-card p-4">
-                <p className="text-sm">{m.body}</p>
-                <p className="mt-2 text-xs text-muted-foreground">Hint: {m.hint}</p>
-                {m.reply && (
-                  <p className="mt-3 rounded-xl border border-glass-border px-3 py-2 text-sm">
-                    Your reply: {m.reply}
-                  </p>
-                )}
-                {replyTo === m.id ? (
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      value={reply}
-                      onChange={(e) => setReply(e.target.value)}
-                      placeholder="Reply anonymously"
-                      aria-label="Reply anonymously"
-                      className="w-full rounded-xl border border-glass-border bg-transparent px-3 py-2 text-sm outline-none"
-                    />
-                    <button
-                      onClick={() => {
-                        const text = reply.trim();
-                        if (!text) return;
-                        update((s) => ({
-                          secrets: s.secrets.map((x) => (x.id === m.id ? { ...x, reply: text } : x)),
-                        }));
-                        setReply("");
-                        setReplyTo(null);
-                      }}
-                      className="shrink-0 rounded-xl bg-gradient-vyzun px-3 text-primary-foreground tap active:tap-active"
-                      aria-label="Send reply"
-                    >
-                      <Send className="h-4 w-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-                    <button onClick={() => setReplyTo(m.id)} className="tap active:tap-active">
-                      Reply
-                    </button>
-                    <button
-                      onClick={async () => {
-                        const text = `Someone told me: "${m.body}" — reply on VYZUN`;
-                        if (navigator.share) await navigator.share({ text }).catch(() => {});
-                        else await navigator.clipboard?.writeText(text);
-                      }}
-                      className="tap active:tap-active"
-                    >
-                      Share card
-                    </button>
-                    <button className="flex items-center gap-1 tap active:tap-active">
-                      <Flag className="h-3.5 w-3.5" /> Report
-                    </button>
-                    <button
-                      onClick={() =>
-                        update((s) => ({ secrets: s.secrets.filter((x) => x.id !== m.id) }))
-                      }
-                      className="ml-auto flex items-center gap-1 tap active:tap-active"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" /> Delete
-                    </button>
-                  </div>
-                )}
-              </article>
+              <SecretCard
+                key={m.id}
+                message={m}
+                onPay={setPaid}
+                onReply={(text) =>
+                  update((s) => ({ secrets: s.secrets.map((x) => (x.id === m.id ? { ...x, reply: text } : x)) }))
+                }
+                onDelete={() => update((s) => ({ secrets: s.secrets.filter((x) => x.id !== m.id) }))}
+              />
             ))}
           </section>
         )}
+
+        {tab === "map" && <CampusRadar onPay={setPaid} />}
+
 
         {tab === "feed" && (
           <section>
