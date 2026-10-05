@@ -309,3 +309,42 @@
     animation: vz-rise 0.01s linear both;
   }
 }
+
+/* ---------- Campus radar ---------- */
+@keyframes vz-radar-ping {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}
+@keyframes vz-float {
+  0%, 100% { transform: translate(-50%, -50%) translateY(0) rotate(-4deg); }
+  50% { transform: translate(-50%, -50%) translateY(-8px) rotate(4deg); }
+}
+@keyframes vz-sweep {
+  to { transform: rotate(360deg); }
+}
+@utility anim-radar-ping {
+  animation: vz-radar-ping 3.2s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+@utility anim-float {
+  animation: vz-float 3.6s ease-in-out infinite;
+}
+@utility anim-sweep {
+  animation: vz-sweep 6s linear infinite;
+}
+@utility bg-radar-grid {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 50% 50%, oklch(0.54 0.25 293 / 22%), transparent 60%),
+    linear-gradient(oklch(0.88 0.15 199 / 7%) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.88 0.15 199 / 7%) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px, 28px 28px;
+}
+@utility bg-radar-sweep {
+  background-image: conic-gradient(from 0deg, oklch(0.88 0.15 199 / 28%), transparent 22%);
+}
+@utility bg-gradient-gold {
+  background-image: linear-gradient(120deg, var(--vz-gold), oklch(0.7 0.18 55));
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-radar-ping, .anim-float, .anim-sweep { animation: none; }
+}
