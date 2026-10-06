@@ -4,7 +4,6 @@ import {
   Camera,
   Download,
   Heart,
-  ImageUp,
   RefreshCcw,
   Send,
   Share2,
@@ -86,15 +85,6 @@ function generateAura(mode: AuraCard["mode"], photo?: string | null): AuraCard {
   };
 }
 
-function readFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("read-failed"));
-    reader.readAsDataURL(file);
-  });
-}
-
 /** Grab a single still frame from the front camera as a data URL. */
 async function captureSelfie() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -136,7 +126,6 @@ function ScanPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "share" | "download" | "post">(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLElement>(null);
 
   async function requestCamera() {
@@ -146,7 +135,7 @@ function ScanPage() {
       setPhoto(shot);
       runScan(shot);
     } catch {
-      setCameraError("Camera unavailable. You can upload a photo from your gallery instead.");
+      setCameraError("Camera unavailable. Allow camera access in your browser settings and try again.");
     }
   }
 
