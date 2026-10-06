@@ -1,10 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  Camera,
   Download,
   Heart,
-  ImageUp,
   RefreshCcw,
   Send,
   Share2,
@@ -86,15 +84,6 @@ function generateAura(mode: AuraCard["mode"], photo?: string | null): AuraCard {
   };
 }
 
-function readFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("read-failed"));
-    reader.readAsDataURL(file);
-  });
-}
-
 /** Grab a single still frame from the front camera as a data URL. */
 async function captureSelfie() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
@@ -136,7 +125,6 @@ function ScanPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "share" | "download" | "post">(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLElement>(null);
 
   async function requestCamera() {
@@ -146,7 +134,7 @@ function ScanPage() {
       setPhoto(shot);
       runScan(shot);
     } catch {
-      setCameraError("Camera unavailable. You can upload a photo from your gallery instead.");
+      setCameraError("Camera unavailable. Allow camera access in your browser settings and try again.");
     }
   }
 
@@ -269,7 +257,7 @@ function ScanPage() {
               aria-hidden
             />
           ))}
-          <div className="absolute inset-0 grid place-items-center">
+          <div className="absolute left-1/2 top-1/2 h-40 w-32">
             <div className="anim-float h-40 w-32 rounded-[50%] border border-magenta/50 neon-ring" />
           </div>
           {scanning && (
@@ -286,39 +274,16 @@ function ScanPage() {
           </p>
         )}
 
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <button
-            onClick={requestCamera}
-            disabled={scanning}
-            className="flex items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground tap active:tap-active disabled:opacity-60"
-          >
-            <Camera className="h-4 w-4" /> {scanning ? "Scanning…" : "Start Scan"}
-          </button>
-          <button
-            onClick={() => fileRef.current?.click()}
-            disabled={scanning}
-            className="flex items-center justify-center gap-2 rounded-xl border border-glass-border py-3 font-semibold tap active:tap-active disabled:opacity-60"
-          >
-            <ImageUp className="h-4 w-4" /> Upload
-          </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              try {
-                const url = await readFile(file);
-                setPhoto(url);
-                runScan(url);
-              } catch {
-                setCameraError("Couldn’t read that photo. Try another one.");
-              }
-            }}
-          />
-        </div>
+        <button
+          onClick={requestCamera}
+          disabled={scanning}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3.5 font-semibold text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active disabled:opacity-60"
+        >
+          {scanning ? "Scanning…" : "📸 Start Live Face Scan"}
+        </button>
+        <p className="mt-2 text-center text-[11px] text-muted-foreground">
+          ⚡ Real-Time Camera Scan Only • Gallery Upload Disabled for Accuracy
+        </p>
 
         {card && (
           <section className="anim-rise mt-8">

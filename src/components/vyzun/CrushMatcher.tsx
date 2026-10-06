@@ -1,66 +1,58 @@
 import { useState } from "react";
-import { HeartHandshake, Lock } from "lucide-react";
-import { useVyzun } from "@/lib/vyzun-store";
+import { HeartHandshake, Lock, Zap } from "lucide-react";
+import { useVyzunSession } from "@/hooks/use-vyzun-session";
+import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
 
 /**
- * Double-blind crush matcher. A selection is never revealed to the other
- * person; only a validated mutual match surfaces anything. Free — no currency.
+ * Double-blind crush. Picks are never revealed to the other person; the paid
+ * reveal only works on a server-confirmed mutual match.
  */
 export function CrushMatcher() {
-  const { state, update } = useVyzun();
-  const [value, setValue] = useState("");
-  const [matched, setMatched] = useState(false);
-
-  function submit() {
-    const handle = value.trim().replace(/^@/, "").toLowerCase();
-    if (!handle) return;
-    update({ crush: handle });
-    setValue("");
-    // A real mutual match is resolved server-side; nothing is revealed here.
-    setMatched(false);
-  }
+  const { isAuthenticated } = useVyzunSession();
+  const [paid, setPaid] = useState<PaidAction | null>(null);
 
   return (
     <section className="glass-card mt-8 p-5">
       <h2 className="flex items-center gap-2 text-lg font-semibold">
-        <HeartHandshake className="h-5 w-5 text-magenta" /> Double-Blind Crush
+        <HeartHandshake className="h-5 w-5 shrink-0 text-magenta" /> Double-Blind Crush
       </h2>
       <p className="mt-1 text-xs text-muted-foreground">
         Pick anonymously. They only ever learn if you both pick each other.
       </p>
 
-      {state.crush ? (
-        <div className="mt-4 rounded-xl border border-glass-border px-4 py-3 text-sm">
-          <p className="flex items-center gap-2">
-            <Lock className="h-4 w-4 text-cyan" /> Your pick is sealed.
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {matched ? "IT'S A MATCH! 💘" : "Waiting for a mutual match. Nothing is shared until then."}
-          </p>
-          <button
-            onClick={() => update({ crush: null })}
-            className="mt-3 text-xs text-muted-foreground underline tap active:tap-active"
-          >
-            Change my pick
-          </button>
-        </div>
-      ) : (
-        <div className="mt-4 flex gap-2">
-          <input
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="@their_username"
-            aria-label="Crush username"
-            className="w-full rounded-xl border border-glass-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
-          />
-          <button
-            onClick={submit}
-            className="shrink-0 rounded-xl bg-gradient-vyzun px-4 font-semibold text-primary-foreground tap active:tap-active"
-          >
-            Seal
-          </button>
-        </div>
-      )}
+      <p className="mt-4 flex items-center gap-2 rounded-xl border border-glass-border px-4 py-3 text-sm">
+        <Lock className="h-4 w-4 shrink-0 text-cyan" />
+        {isAuthenticated ? "Your private pick is sealed and waiting." : "Sign in to seal a private pick."}
+      </p>
+
+      <button
+        onClick={() =>
+          setPaid({
+            title: "Reveal Identity & Instant Chat",
+            price: "$4.99",
+            description: "See who it is and open a private chat — only if you both picked each other.",
+          })
+        }
+        className="mt-4 w-full rounded-xl bg-gradient-vyzun py-3 text-sm font-semibold text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active"
+      >
+        $4.99 · Reveal Identity &amp; Instant Chat
+      </button>
+      <button
+        onClick={() =>
+          setPaid({
+            title: "Boost Campus Aura Points",
+            price: "$2.99",
+            description: "Add a boost to your campus Aura points for 24 hours.",
+          })
+        }
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-cyan/60 bg-background/50 py-3 text-sm font-semibold backdrop-blur-md tap active:tap-active"
+      >
+        <Zap className="h-4 w-4 text-cyan" /> $2.99 · Boost Campus Aura Points
+      </button>
+      <p className="mt-3 text-center text-[11px] text-muted-foreground">
+        Reveal works only when both people picked each other.
+      </p>
+      <PaidActionSheet action={paid} onClose={() => setPaid(null)} />
     </section>
   );
 }

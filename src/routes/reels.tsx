@@ -2,14 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   BadgeCheck,
+  Eye,
+  Flame,
+  Heart,
   Bookmark,
   MessageSquare,
   Music2,
   Plus,
   Share2,
-  UserRound,
 } from "lucide-react";
-import { REACTIONS, useVyzun, type ReactionKey } from "@/lib/vyzun-store";
+import { useVyzun, type ReactionKey } from "@/lib/vyzun-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/reels")({
@@ -31,7 +33,7 @@ export const Route = createFileRoute("/reels")({
   component: ReelsPage,
 });
 
-const CATEGORIES = ["Following", "For You", "Trending", "New", "Comedy"] as const;
+const CATEGORIES = ["Vibing", "For You", "Campus Vibes", "Trending"] as const;
 
 type Reel = {
   id: string;
@@ -101,7 +103,8 @@ function ReelsPage() {
 
   return (
     <div className="fixed inset-0 bottom-0 flex flex-col bg-background">
-      <div className="absolute inset-x-0 top-0 z-20 flex gap-2 overflow-x-auto bg-gradient-to-b from-background/90 to-transparent px-4 pb-6 pt-4">
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 bg-gradient-to-b from-background/90 to-transparent px-4 pb-6 pt-4">
+        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
         {CATEGORIES.map((c) => (
           <button
             key={c}
@@ -114,6 +117,13 @@ function ReelsPage() {
             {c}
           </button>
         ))}
+        </div>
+        <button
+          aria-label="Create Reel"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-vyzun text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active"
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
 
       <div
@@ -145,8 +155,8 @@ function ReelsPage() {
               <div className="relative z-10 w-full p-5 pb-24">
                 <div className="flex items-end gap-4">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="grid h-9 w-9 place-items-center rounded-full bg-gradient-vyzun text-sm font-bold text-primary-foreground">
+                    <div className="flex min-w-0 flex-wrap items-center gap-2">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-vyzun text-sm font-bold text-primary-foreground">
                         {reel.creator[0]?.toUpperCase()}
                       </span>
                       <span className="flex items-center gap-1 text-sm font-semibold">
@@ -167,30 +177,35 @@ function ReelsPage() {
                     </div>
                     <p className="mt-3 text-sm">{reel.caption}</p>
                     <p className="mt-1 text-xs text-cyan">{reel.hashtags.join(" ")}</p>
-                    <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Music2 className="anim-float h-3.5 w-3.5" /> {reel.audio} · {reel.views} views
+                    <p className="mt-2 flex min-w-0 items-center gap-1.5 truncate text-xs text-muted-foreground">
+                      <Music2 className="anim-sweep h-3.5 w-3.5 shrink-0" /> {reel.audio} · {reel.views} views
                     </p>
                   </div>
 
-                  <div className="flex flex-col items-center gap-4">
-                    <button aria-label="Creator profile" className="tap active:tap-active">
-                      <UserRound className="h-6 w-6" />
+                  <div className="flex shrink-0 flex-col items-center gap-4 drop-shadow-lg">
+                    <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-cyan bg-gradient-vyzun text-sm font-bold text-primary-foreground">
+                      {reel.creator[0]?.toUpperCase()}
+                    </span>
+                    <button
+                      aria-label="Like"
+                      onClick={() => setReactions((s) => ({ ...s, [reel.id]: s[reel.id] === "vibe" ? null : "vibe" }))}
+                      className="flex flex-col items-center text-[10px] tap active:tap-active"
+                    >
+                      <Heart className={cn("h-6 w-6", mine === "vibe" && "fill-magenta text-magenta")} />
+                      {(reel.counts.vibe + (mine === "vibe" ? 1 : 0)).toLocaleString()}
                     </button>
-                    {REACTIONS.map((r) => (
-                      <button
-                        key={r.key}
-                        aria-label={r.label}
-                        onClick={() =>
-                          setReactions((s) => ({ ...s, [reel.id]: s[reel.id] === r.key ? null : r.key }))
-                        }
-                        className={cn("flex flex-col items-center text-[10px] tap active:tap-active", mine === r.key && "scale-110")}
-                      >
-                        <span className="text-xl" aria-hidden>
-                          {r.emoji}
-                        </span>
-                        {(reel.counts[r.key] + (mine === r.key ? 1 : 0)).toLocaleString()}
-                      </button>
-                    ))}
+                    <span className="flex flex-col items-center text-[10px]" aria-label="Views">
+                      <Eye className="h-6 w-6 text-cyan" />
+                      {reel.views}
+                    </span>
+                    <button
+                      aria-label="Fire reaction"
+                      onClick={() => setReactions((s) => ({ ...s, [reel.id]: s[reel.id] === "savage" ? null : "savage" }))}
+                      className="flex flex-col items-center text-[10px] tap active:tap-active"
+                    >
+                      <Flame className={cn("h-6 w-6", mine === "savage" && "fill-gold text-gold")} />
+                      {(reel.counts.savage + (mine === "savage" ? 1 : 0)).toLocaleString()}
+                    </button>
                     <button aria-label="Comments" className="tap active:tap-active">
                       <MessageSquare className="h-6 w-6" />
                     </button>
@@ -216,12 +231,6 @@ function ReelsPage() {
         })}
       </div>
 
-      <button
-        aria-label="Create Reel"
-        className="absolute right-5 top-16 z-20 grid h-11 w-11 place-items-center rounded-2xl bg-gradient-vyzun text-primary-foreground tap active:tap-active"
-      >
-        <Plus className="h-5 w-5" />
-      </button>
     </div>
   );
 }
