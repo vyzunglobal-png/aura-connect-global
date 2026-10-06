@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
-  Camera,
   Download,
   Heart,
   RefreshCcw,
@@ -280,7 +279,7 @@ function ScanPage() {
           disabled={scanning}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3.5 font-semibold text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active disabled:opacity-60"
         >
-          <Camera className="h-4 w-4" /> {scanning ? "Scanning…" : "📸 Start Live Face Scan"}
+          {scanning ? "Scanning…" : "📸 Start Live Face Scan"}
         </button>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           ⚡ Real-Time Camera Scan Only • Gallery Upload Disabled for Accuracy
