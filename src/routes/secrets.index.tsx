@@ -7,6 +7,7 @@ import { DirectChatsSheet } from "@/components/vyzun/DirectChatsSheet";
 import { SecretCard } from "@/components/vyzun/SecretCard";
 import { CampusRadar } from "@/components/vyzun/CampusRadar";
 import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
+import { SendSecretPanel } from "@/components/vyzun/SendSecretPanel";
 
 export const Route = createFileRoute("/secrets/")({
   head: () => ({
@@ -136,20 +137,10 @@ function SecretsPage() {
       <main className="mx-auto max-w-lg px-5">
         {tab === "inbox" && (
           <section className="space-y-3">
+            <SendSecretPanel username={state.profile.username} />
             {state.secrets.length === 0 && (
               <div className="glass-card p-6 text-center">
                 <p className="text-sm text-muted-foreground">No secrets yet. Share your link to get anonymous notes.</p>
-                <button
-                  onClick={async () => {
-                    const url = `${window.location.origin}/secrets`;
-                    const text = "Send me an anonymous secret on VYZUN 👻";
-                    if (navigator.share) await navigator.share({ text, url }).catch(() => {});
-                    else await navigator.clipboard?.writeText(`${text} ${url}`);
-                  }}
-                  className="mt-4 rounded-xl bg-gradient-vyzun px-4 py-2.5 text-sm font-semibold text-primary-foreground tap active:tap-active"
-                >
-                  Share my secret link
-                </button>
               </div>
             )}
             {state.secrets.map((m) => (
