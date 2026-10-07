@@ -5,10 +5,10 @@ import { Logo, Wordmark } from "./Logo";
 import { cn } from "@/lib/utils";
 
 const RARITY_RING: Record<string, string> = {
-  Common: "from-slate-400 via-slate-200 to-slate-500",
-  Rare: "from-cyan via-sky-200 to-cyan",
-  Epic: "from-magenta via-fuchsia-200 to-primary",
-  Legendary: "from-amber-300 via-yellow-100 to-amber-500",
+  Common: "from-muted-foreground via-foreground to-muted",
+  Rare: "from-cyan via-foreground to-cyan",
+  Epic: "from-magenta via-foreground to-primary",
+  Legendary: "from-gold via-foreground to-gold",
   Mythic: "from-magenta via-cyan to-primary",
 };
 
@@ -16,7 +16,7 @@ export const AuraCardView = forwardRef<
   HTMLElement,
   { card: AuraCard; username: string; prime?: boolean; className?: string }
 >(function AuraCardView({ card, username, prime, className }, ref) {
-  const ring = RARITY_RING[card.rarity] ?? RARITY_RING["Epic"]!;
+  const ring = RARITY_RING[card.rarity] ?? "from-magenta via-cyan to-primary";
 
   return (
     <article
@@ -26,11 +26,8 @@ export const AuraCardView = forwardRef<
         className,
       )}
     >
-      {/* ambient aura FX */}
+      {/* holographic aura surface */}
       <div className="absolute inset-0 bg-gradient-vyzun opacity-25" />
-      <div className="absolute -left-16 top-10 h-56 w-56 rounded-full bg-cyan/40 blur-[70px]" />
-      <div className="absolute -right-16 top-1/3 h-56 w-56 rounded-full bg-magenta/40 blur-[70px]" />
-      <div className="absolute bottom-0 left-1/4 h-56 w-56 rounded-full bg-primary/40 blur-[70px]" />
       <div className="absolute inset-0 backdrop-blur-md" />
 
       <div className="relative flex h-full flex-col p-6">
@@ -69,9 +66,8 @@ export const AuraCardView = forwardRef<
           </span>
           <p
             className="font-display text-7xl font-bold leading-none"
-            style={{ textShadow: "0 0 24px color-mix(in oklab, var(--primary) 70%, transparent)" }}
           >
-            {card.score}
+            {card.score}%
           </p>
           <p className="text-gradient font-display text-2xl font-semibold">{card.headline}</p>
           <p className="mt-1 text-[11px] text-muted-foreground">

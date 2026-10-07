@@ -144,7 +144,7 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
 }
 
@@ -348,3 +348,10 @@
 @media (prefers-reduced-motion: reduce) {
   .anim-radar-ping, .anim-float, .anim-sweep { animation: none; }
 }
+
+@keyframes vz-hologram {
+  0%, 100% { transform: perspective(1000px) rotateY(-3deg) rotateX(1deg); }
+  50% { transform: perspective(1000px) rotateY(3deg) rotateX(-1deg); }
+}
+.aura-hologram { animation: vz-hologram 7s ease-in-out infinite; box-shadow: var(--glow-neon), var(--glow-cyan); }
+@media (prefers-reduced-motion: reduce) { .aura-hologram { animation: none; } }

@@ -13,7 +13,13 @@ import {
   Sparkles,
   TrendingUp,
   Wallet2,
+  Gem,
+  Plane,
+  Video,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ReelStudio } from "@/components/vyzun/ReelStudio";
+import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
 import { useVyzun } from "@/lib/vyzun-store";
 import { CreatorDashboardSheet } from "@/components/vyzun/CreatorDashboardSheet";
 import { PrimeSheet } from "@/components/vyzun/PrimeSheet";
@@ -34,6 +40,8 @@ export const Route = createFileRoute("/profile")({
           "Manage your VYZUN identity: Vibers, Vibing, Reels, Aura Cards, Scan history, Prime and the Creator Dashboard.",
       },
       { property: "og:title", content: "Your VYZUN Profile" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Vibers, Reels, Aura Cards, Prime and real-money creator earnings on VYZUN.",
@@ -48,10 +56,12 @@ function ProfilePage() {
   const { u } = Route.useSearch();
   const [tab, setTab] = useState<"reels" | "aura" | "scans">("reels");
   const [sheet, setSheet] = useState<null | "prime" | "creator" | "settings">(null);
+  const [studioOpen, setStudioOpen] = useState(false);
+  const [paid, setPaid] = useState<PaidAction | null>(null);
   const p = state.profile;
   const isSelf = !u || u.toLowerCase() === p.username.toLowerCase();
-  const viewedName = isSelf ? p.displayName : u!;
-  const viewedHandle = isSelf ? p.username : u!;
+  const viewedName = isSelf ? p.displayName : (u ?? p.username);
+  const viewedHandle = isSelf ? p.username : (u ?? p.username);
 
   return (
     <div className="pb-28">
@@ -135,11 +145,11 @@ function ProfilePage() {
             onClick={() => setSheet("prime")}
             className="glass-card flex items-center gap-3 p-4 text-left tap active:tap-active"
           >
-            <Crown className="h-5 w-5 text-magenta" />
+             <Crown className="h-5 w-5 text-gold" />
             <span>
-              <span className="block text-sm font-semibold">VYZUN Prime</span>
+               <span className="block text-sm font-semibold">VYZUN Platinum Pass</span>
               <span className="text-xs text-muted-foreground">
-                {p.prime ? "Active" : "Premium aura, themes & creator tools"}
+                 {p.prime ? "Active" : "$19.99 – $49.99/mo · Golden halo & premium hints"}
               </span>
             </span>
           </button>
@@ -157,6 +167,16 @@ function ProfilePage() {
       </header>
 
       <main className="mx-auto mt-6 max-w-lg px-5">
+        <section className="mb-6 border-y border-glass-border py-5">
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Crown className="h-5 w-5 text-gold" />Luxury Trophy Cabinet</h2>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[{ name: "Virtual Crown", price: "$49", icon: Crown }, { name: "Private Jet", price: "$199", icon: Plane }, { name: "Diamond Aura", price: "$499", icon: Gem }].map(({ name, price, icon: Icon }) => <Button key={name} variant="outline"
+              onClick={() => setPaid({ title: name, price, description: `Send a ${name} digital gift to an eligible creator. No physical item. Gifts appear only after verified payment.` })}
+              className="h-auto min-h-32 flex-col whitespace-normal border-gold/30 bg-glass px-2 py-4 text-center">
+              <Icon className="mb-2 text-gold !size-8" /><span className="text-xs">{name}</span><span className="font-display font-bold text-gold">{price}</span>
+            </Button>)}
+          </div>
+        </section>
         <div className="flex gap-2">
           {(["reels", "aura", "scans"] as const).map((t) => (
             <button
@@ -173,22 +193,16 @@ function ProfilePage() {
         </div>
 
         {tab === "reels" && (
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="aspect-[9/16] rounded-xl border border-glass-border bg-gradient-vyzun/10" />
-            ))}
-            <p className="col-span-3 mt-2 text-center text-xs text-muted-foreground">
-              Upload your first original Reel to start building Vibers.
-            </p>
+          <div className="mt-4 flex flex-col items-center gap-3 py-8 text-center">
+            <Video className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">Your first Reel starts here.</p>
+            <Button className="bg-gradient-vyzun" onClick={() => setStudioOpen(true)}>+ Create Reel</Button>
           </div>
         )}
 
         {tab === "aura" && (
           <div className="mt-4 space-y-2">
             {state.auraCards.length === 0 && (
-              <p className="glass-card p-6 text-center text-sm text-muted-foreground">
-                No Aura Cards yet — run a scan.
-              </p>
+              <div className="flex flex-col items-center gap-3 py-8 text-center"><Sparkles className="h-8 w-8 text-magenta" /><p className="text-sm text-muted-foreground">No Aura Card yet!</p><Button asChild className="bg-gradient-vyzun"><Link to="/">Scan Face Now</Link></Button></div>
             )}
             {state.auraCards.map((c) => (
               <div key={c.id} className="glass-card flex items-center gap-3 p-4">
@@ -207,7 +221,7 @@ function ProfilePage() {
         {tab === "scans" && (
           <div className="mt-4 space-y-2">
             {state.scans.length === 0 && (
-              <p className="glass-card p-6 text-center text-sm text-muted-foreground">No scans yet.</p>
+              <div className="flex flex-col items-center gap-3 py-8 text-center"><Camera className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">No scans yet.</p><Button asChild className="bg-gradient-vyzun"><Link to="/">Start Live Face Scan</Link></Button></div>
             )}
             {state.scans.map((s) => (
               <div key={s.id} className="glass-card flex items-center justify-between p-4 text-sm">
@@ -237,6 +251,8 @@ function ProfilePage() {
       </main>
 
       <PrimeSheet open={sheet === "prime"} onClose={() => setSheet(null)} />
+      <ReelStudio open={studioOpen} onClose={() => setStudioOpen(false)} />
+      <PaidActionSheet action={paid} onClose={() => setPaid(null)} />
       <CreatorDashboardSheet open={sheet === "creator"} onClose={() => setSheet(null)} />
       <SettingsSheet
         open={sheet === "settings"}

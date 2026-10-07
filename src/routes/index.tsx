@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Download,
   Heart,
@@ -26,6 +27,8 @@ export const Route = createFileRoute("/")({
           "Scan your vibe with the VYZUN AI scanner, generate an Aura Card and share it. Watch. Create. Vibe. Earn.",
       },
       { property: "og:title", content: "VYZUN Scan — AI Aura Scanner" },
+       { property: "og:type", content: "website" },
+       { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Generate your AI Aura Card on VYZUN and share your vibe with the world.",
@@ -126,15 +129,39 @@ function ScanPage() {
   const [busy, setBusy] = useState<null | "share" | "download" | "post">(null);
   const [notice, setNotice] = useState<string | null>(null);
   const cardRef = useRef<HTMLElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [resultOpen, setResultOpen] = useState(false);
+  useEffect(() => () => streamRef.current?.getTracks().forEach(t => t.stop()), []);
 
   async function requestCamera() {
     setCameraError(null);
+    setScanning(true);
     try {
-      const shot = await captureSelfie();
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) throw new Error("Camera preview unavailable");
+      video.srcObject = stream;
+      await video.play();
+      await new Promise(resolve => window.setTimeout(resolve, 1400));
+      const canvas = document.createElement("canvas");
+      const size = Math.min(video.videoWidth, video.videoHeight);
+      if (!size) throw new Error("No camera frame");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("No image context");
+      ctx.drawImage(video, (video.videoWidth - size) / 2, (video.videoHeight - size) / 2, size, size, 0, 0, size, size);
+      const shot = canvas.toDataURL("image/jpeg", 0.9);
       setPhoto(shot);
       runScan(shot);
     } catch {
+      setScanning(false);
       setCameraError("Camera unavailable. Allow camera access in your browser settings and try again.");
+    } finally {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
     }
   }
 
@@ -145,6 +172,7 @@ function ScanPage() {
     window.setTimeout(() => {
       const next = generateAura(mode, usePhoto);
       setCard(next);
+      setResultOpen(true);
       setScanning(false);
       update((s) => ({
         auraCards: [next, ...s.auraCards].slice(0, 30),
@@ -167,7 +195,7 @@ function ScanPage() {
       const result = await shareImage(
         out.blob,
         out.dataUrl,
-        `My VYZUN aura is ${card.score} (${card.rarity}). Beat my Aura → VYZUN`,
+        `My VYZUN aura is ${card.score}% — ${card.rarity}. Beat my Aura → ${window.location.origin}/?ref=${encodeURIComponent(state.profile.username)}&aura=${encodeURIComponent(card.id)}`,
       );
       if (result === "downloaded") setNotice("Sharing isn’t available here — the image was saved instead.");
     } catch {
@@ -249,6 +277,7 @@ function ScanPage() {
 
         <div className="glass-card relative mt-5 aspect-[3/4] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-vyzun opacity-10" />
+          <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
           <div className="absolute inset-6 rounded-3xl border border-glass-border" />
           {["left-4 top-4", "right-4 top-4", "left-4 bottom-4", "right-4 bottom-4"].map((pos) => (
             <span
@@ -257,8 +286,8 @@ function ScanPage() {
               aria-hidden
             />
           ))}
-          <div className="absolute left-1/2 top-1/2 h-40 w-32">
-            <div className="anim-float h-40 w-32 rounded-[50%] border border-magenta/50 neon-ring" />
+          <div className="absolute left-1/2 top-1/2 h-40 w-32 -translate-x-1/2 -translate-y-1/2">
+            <div className="h-40 w-32 rounded-[50%] border border-magenta/50 neon-ring" />
           </div>
           {scanning && (
             <div className="anim-scanline absolute inset-x-6 top-1/2 h-16 bg-gradient-vyzun opacity-40 blur-md" />
@@ -285,31 +314,34 @@ function ScanPage() {
           ⚡ Real-Time Camera Scan Only • Gallery Upload Disabled for Accuracy
         </p>
 
-        {card && (
-          <section className="anim-rise mt-8">
+        {card && resultOpen && (
+          <div role="dialog" aria-modal="true" aria-label="Your holographic Aura Card" className="fixed inset-0 z-[60] overflow-y-auto bg-background/90 p-4 pb-24 backdrop-blur-md">
+          <section className="anim-rise mx-auto max-w-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Your Aura Card</h2>
-              <button
-                onClick={() => runScan()}
+               <Button variant="ghost"
+                 onClick={() => setResultOpen(false)}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground tap active:tap-active"
               >
-                <RefreshCcw className="h-3.5 w-3.5" /> Regenerate
-              </button>
+                 Close
+               </Button>
             </div>
             <AuraCardView
               ref={cardRef}
               card={card}
               username={state.profile.username}
               prime={state.profile.prime}
+               className="aura-hologram"
             />
-            <button
+             <Button
               onClick={onShare}
               disabled={busy !== null}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground tap active:tap-active disabled:opacity-60"
+               className="mt-4 h-auto w-full whitespace-normal rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground tap active:tap-active disabled:opacity-60"
             >
               <Share2 className="h-4 w-4" />
-              {busy === "share" ? "Preparing image…" : "Share Aura Card"}
-            </button>
+               {busy === "share" ? "Preparing image…" : "✨ Share Aura Card to Instagram/TikTok Story"}
+             </Button>
+             <p className="mt-2 text-center text-xs text-muted-foreground">Entertainment reading · not a measured personality or campus ranking.</p>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <button
                 onClick={onDownload}
@@ -334,7 +366,9 @@ function ScanPage() {
               </p>
             )}
           </section>
+          </div>
         )}
+        {card && !resultOpen && <Button variant="outline" className="mt-4 w-full" onClick={() => setResultOpen(true)}><Sparkles />View your Aura Card</Button>}
 
         <CrushMatcher />
       </main>
