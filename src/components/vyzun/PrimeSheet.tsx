@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BadgeCheck, Crown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { PaidActionSheet } from "./PaidActionSheet";
 
 /**
  * VYZUN Prime + Prime Creator. Pricing is configurable from Admin.
@@ -8,10 +10,8 @@ import { cn } from "@/lib/utils";
  * and subscription state must be verified server-side.
  */
 const PLANS = [
-  { id: "prime-monthly", tier: "Prime", label: "₹99 / month", note: "Cancel anytime" },
-  { id: "prime-yearly", tier: "Prime", label: "₹799 / year", note: "Best value" },
-  { id: "creator-monthly", tier: "Prime Creator", label: "₹199 / month", note: "Creator tools" },
-  { id: "creator-yearly", tier: "Prime Creator", label: "₹1,499 / year", note: "Best value" },
+  { id: "platinum", tier: "Platinum", label: "$19.99 / month", note: "Cancel anytime" },
+  { id: "platinum-creator", tier: "Platinum Creator", label: "$49.99 / month", note: "Creator benefits" },
 ];
 
 const PRIME_BENEFITS = [
@@ -22,6 +22,9 @@ const PRIME_BENEFITS = [
   "Premium themes & profile effects",
   "Advanced analytics",
   "Early feature access",
+  "Opt-in profile view insights",
+  "Unlimited Tier-1 hints with sender consent",
+  "Golden Map Halo",
 ];
 
 const CREATOR_BENEFITS = [
@@ -34,16 +37,17 @@ const CREATOR_BENEFITS = [
 ];
 
 export function PrimeSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [selected, setSelected] = useState("prime-yearly");
+  const [selected, setSelected] = useState("platinum");
+  const [checkout, setCheckout] = useState(false);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-background/60 backdrop-blur-sm">
+    <div role="dialog" aria-modal="true" aria-label="VYZUN Platinum Pass" className="fixed inset-0 z-50 flex items-end bg-background/60 backdrop-blur-sm">
       <div className="glass-card max-h-[85vh] w-full overflow-y-auto rounded-b-none p-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
-            <Crown className="h-5 w-5 text-magenta" /> VYZUN Prime
+            <Crown className="h-5 w-5 text-gold" /> VYZUN Platinum Pass
           </h2>
           <button onClick={onClose} aria-label="Close" className="tap active:tap-active">
             <X className="h-5 w-5" />
@@ -90,17 +94,18 @@ export function PrimeSheet({ open, onClose }: { open: boolean; onClose: () => vo
           </section>
         </div>
 
-        <button
-          disabled
-          className="mt-5 w-full rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground opacity-70"
+        <Button
+          onClick={() => setCheckout(true)}
+          className="mt-5 h-auto w-full rounded-xl bg-gradient-gold py-3 font-semibold text-background"
         >
           Continue to secure checkout
-        </button>
+        </Button>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           Checkout activates once a real payment provider is connected. Prime does not grant
           VYZUN Verified — verification is a separate identity review.
         </p>
       </div>
+      <PaidActionSheet action={checkout ? { title: selected === "platinum" ? "Platinum Pass" : "Platinum Creator Pass", price: selected === "platinum" ? "$19.99/mo" : "$49.99/mo", description: "Monthly subscription. Cancel anytime. Hints and profile views respect consent and privacy settings. No benefits activate without verified payment." } : null} onClose={() => setCheckout(false)} />
     </div>
   );
 }
