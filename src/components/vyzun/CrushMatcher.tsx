@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { HeartHandshake, Lock, Zap } from "lucide-react";
+import { HeartHandshake, Lock, Zap, Swords } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useVyzunSession } from "@/hooks/use-vyzun-session";
 import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
 
@@ -49,6 +50,10 @@ export function CrushMatcher() {
       >
         <Zap className="h-4 w-4 text-cyan" /> $2.99 · Boost Campus Aura Points
       </button>
+      <Button variant="outline" onClick={() => setPaid({ title: "Inter-Campus Battle Pass", price: "$1.99", description: "Join an inter-campus Aura event. Participation activates only after verified payment; no global individual leaderboard." })}
+        className="mt-3 h-auto w-full whitespace-normal border-gold/50 py-3 text-sm">
+        <Swords className="text-gold" /> $1.99 · Join Inter-Campus Battle Pass
+      </Button>
       <p className="mt-3 text-center text-[11px] text-muted-foreground">
         Reveal works only when both people picked each other.
       </p>

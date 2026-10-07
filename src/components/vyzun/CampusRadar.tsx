@@ -69,7 +69,7 @@ export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
           }
           className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-gold/50 bg-background/70 px-3 py-1.5 text-[11px] font-semibold backdrop-blur-md tap active:tap-active"
         >
-          <Sparkles className="h-3.5 w-3.5 text-gold" /> VIP Halo
+          <Sparkles className="h-3.5 w-3.5 text-gold" /> VIP Halo · $4.99/mo
         </button>
 
         {TRINKETS.map((t, i) => (
@@ -103,11 +103,11 @@ export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
                 description: `Local businesses like ${s.name} appear as glowing pins with a deal for students nearby.`,
               })
             }
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1 rounded-full border border-emerald/50 bg-background/75 px-2 py-1 text-[10px] font-semibold backdrop-blur-md tap active:tap-active"
+            className="absolute flex max-w-[48%] -translate-x-1/2 -translate-y-1/2 flex-wrap items-center justify-center gap-1 rounded-xl border border-emerald/50 bg-background/75 px-2 py-1 text-[10px] font-semibold backdrop-blur-md tap active:tap-active"
             style={{ left: `${s.x}%`, top: `${s.y}%` }}
           >
             <Store className="h-3 w-3 text-emerald" /> {s.name}
-            <span className="text-muted-foreground">· Ad</span>
+            <span className="text-muted-foreground">· Ad $99/mo</span>
           </button>
         ))}
 
