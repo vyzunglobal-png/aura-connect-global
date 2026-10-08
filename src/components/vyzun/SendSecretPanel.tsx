@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { sendModeratedSecret } from "@/lib/message-safety.functions";
 import { Copy, Search, Send, Share2 } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,22 +11,25 @@ const schema = z.object({
   body: z.string().trim().min(1, "Write a message").max(500, "Max 500 characters"),
 });
 
-export function SendSecretPanel({ username }: { username: string }) {
+export function SendSecretPanel({ username, initialTo = "" }: { username: string; initialTo?: string }) {
   const { session, profile } = useVyzunSession();
   const handle = profile?.username ?? username;
-  const link = `vyzun.app/ask/@${handle}`;
-  const [to, setTo] = useState("");
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const link = `${origin}/secrets?to=${encodeURIComponent(handle)}`;
+  const sendMessage = useServerFn(sendModeratedSecret);
+  const [to, setTo] = useState(initialTo);
+  useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
   const [body, setBody] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   async function copy() {
-    await navigator.clipboard?.writeText(`https://${link}`).catch(() => {});
-    setStatus("Link copied.");
+    try { await navigator.clipboard.writeText(link); setStatus("Link copied."); } catch { setStatus("Could not copy. Please try sharing instead."); }
   }
   async function share() {
     const text = "Send me an anonymous secret on VYZUN 👻";
-    if (navigator.share) await navigator.share({ text, url: `https://${link}` }).catch(() => {});
+    if (navigator.share) await navigator.share({ text, url: link }).catch(() => {});
     else await copy();
   }
 
@@ -35,22 +40,12 @@ export function SendSecretPanel({ username }: { username: string }) {
     setSending(true);
     setStatus(null);
     const name = parsed.data.username.replace(/^@/, "").toLowerCase();
-    const { data: target } = await supabase.from("profiles").select("id").eq("username", name).maybeSingle();
-    if (!target) {
-      setSending(false);
-      return setStatus("No one found with that username.");
-    }
-    const { error } = await supabase.from("secret_messages").insert({
-      recipient_id: target.id,
-      sender_id: session.user.id,
-      body: parsed.data.body,
-      hint: "Someone on VYZUN",
-    });
-    setSending(false);
-    if (error) return setStatus("Couldn't send right now. Try again.");
-    setTo("");
-    setBody("");
-    setStatus("Secret sent anonymously.");
+    try {
+      const result = await sendMessage({ data: { username: name, body: parsed.data.body } });
+      setStatus(result.message);
+      if (result.ok) { setTo(""); setBody(""); }
+    } catch (e) { setStatus(e instanceof Error ? e.message : "Could not send safely. Please try again."); }
+    finally { setSending(false); }
   }
 
   return (
@@ -81,6 +76,7 @@ export function SendSecretPanel({ username }: { username: string }) {
             className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </label>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">🔒 Protected by AI moderation. Bullying or hate speech is strictly prohibited.</p>
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
