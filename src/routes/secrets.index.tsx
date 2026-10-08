@@ -8,8 +8,16 @@ import { SecretCard } from "@/components/vyzun/SecretCard";
 import { CampusRadar } from "@/components/vyzun/CampusRadar";
 import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
 import { SendSecretPanel } from "@/components/vyzun/SendSecretPanel";
+import { SuspenseReveals } from "@/components/vyzun/SuspenseReveals";
+import { MessageSafetyMenu } from "@/components/vyzun/MessageSafetyMenu";
+import { useVyzunSession } from "@/hooks/use-vyzun-session";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { moderateMessage } from "@/lib/message-safety.functions";
 
 export const Route = createFileRoute("/secrets/")({
+  validateSearch: (search: Record<string, unknown>) => ({ to: typeof search.to === "string" ? search.to.replace(/^@/, "").slice(0, 30) : undefined }),
   head: () => ({
     meta: [
       { title: "VYZUN Secrets — Anonymous Inbox, Vibe Feed & Campus Map" },
@@ -18,6 +26,8 @@ export const Route = createFileRoute("/secrets/")({
         content: "Get anonymous secrets, reply privately, post to the Vibe Feed and explore your campus radar map on VYZUN.",
       },
       { property: "og:title", content: "VYZUN Secrets — Anonymous Inbox, Vibe Feed & Campus Map" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Anonymous secrets that burn in 24 hours, the Vibe Feed and a live campus radar.",
@@ -29,6 +39,27 @@ export const Route = createFileRoute("/secrets/")({
 
 function SecretsPage() {
   const { state, update } = useVyzun();
+  const { to } = Route.useSearch();
+  const { session } = useVyzunSession();
+  const moderation = useServerFn(moderateMessage);
+  const [posting, setPosting] = useState(false);
+  const inbox = useQuery({ queryKey: ["secret-inbox", session?.user.id], enabled: !!session, queryFn: async () => {
+    const { data, error } = await supabase.from("secret_messages").select("id,body,hint,created_at").eq("recipient_id", session?.user.id ?? "").eq("is_hidden", false).order("created_at", { ascending: false }).limit(50);
+    if (error) throw error;
+    return (data ?? []).map(m => ({ id: m.id, body: m.body, hint: m.hint, createdAt: new Date(m.created_at).getTime() }));
+  } });
+  const messages = session ? (inbox.data ?? []) : state.secrets;
+  async function removeSecret(id: string) {
+    if (session) { const { error } = await supabase.from("secret_messages").update({ is_hidden: true }).eq("id", id); if (error) { setMediaError("Could not hide this message."); return; } await inbox.refetch(); }
+    else update(s => ({ secrets: s.secrets.filter(x => x.id !== id) }));
+  }
+  async function replySecret(id: string, text: string) {
+    if (!session) { setMediaError("Sign in to send a private reply."); return; }
+    try { const safe = await moderation({ data: { body: text } }); if (!safe.allowed) { setMediaError("Please keep replies kind."); return; }
+      const { error } = await supabase.from("secret_replies").insert({ message_id: id, author_id: session.user.id, body: text });
+      setMediaError(error ? "Could not send reply." : "Private reply sent.");
+    } catch { setMediaError("Safety checks are unavailable. Reply was not sent."); }
+  }
   const [tab, setTab] = useState<"inbox" | "feed" | "map">("inbox");
   const [draft, setDraft] = useState("");
   const [anon, setAnon] = useState(true);
@@ -68,9 +99,15 @@ function SecretsPage() {
     reader.readAsDataURL(file);
   }
 
-  function post() {
+  async function post() {
     const body = draft.trim();
     if (!body && !image) return;
+    if (!session) { setMediaError("Sign in to publish a confession."); return; }
+    if (image) { setMediaError("Photo posts need image moderation before public publishing; please post text for now."); return; }
+    setPosting(true);
+    try { const safe = await moderation({ data: { body } }); if (!safe.allowed) { setMediaError("Bullying or hate speech is prohibited."); return; } }
+    catch { setMediaError("Safety checks are unavailable. Post was not published."); return; }
+    finally { setPosting(false); }
     update((s) => ({
       feed: [
         {
@@ -94,7 +131,7 @@ function SecretsPage() {
 
 
   return (
-    <div className="pb-36">
+     <div className="pb-52">
       <header className="sticky top-0 z-30 bg-background/75 px-5 py-4 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <h1 className="font-display text-2xl font-bold tracking-tight">
@@ -137,21 +174,21 @@ function SecretsPage() {
       <main className="mx-auto max-w-lg px-5">
         {tab === "inbox" && (
           <section className="space-y-3">
-            <SendSecretPanel username={state.profile.username} />
-            {state.secrets.length === 0 && (
+            <SendSecretPanel username={state.profile.username} initialTo={to} />
+            {inbox.isLoading && session && <p role="status" className="text-sm text-muted-foreground">Loading inbox…</p>}
+            {inbox.isError && <p role="alert" className="text-sm text-destructive">Inbox could not be loaded.</p>}
+            {messages.length === 0 && !inbox.isLoading && (
               <div className="glass-card p-6 text-center">
                 <p className="text-sm text-muted-foreground">No secrets yet. Share your link to get anonymous notes.</p>
               </div>
             )}
-            {state.secrets.map((m) => (
+            {messages.map((m) => (
               <SecretCard
                 key={m.id}
                 message={m}
                 onPay={setPaid}
-                onReply={(text) =>
-                  update((s) => ({ secrets: s.secrets.map((x) => (x.id === m.id ? { ...x, reply: text } : x)) }))
-                }
-                onDelete={() => update((s) => ({ secrets: s.secrets.filter((x) => x.id !== m.id) }))}
+                onReply={(text) => void replySecret(m.id, text)}
+                onDelete={() => void removeSecret(m.id)}
               />
             ))}
           </section>
@@ -163,9 +200,10 @@ function SecretsPage() {
         {tab === "feed" && (
           <section>
             <div className="glass-card p-4">
+              <p className="mb-3 text-xs leading-relaxed text-muted-foreground">🔒 Protected by AI moderation. Bullying or hate speech is strictly prohibited.</p>
               <textarea
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => setDraft(e.target.value.slice(0, 500))}
                 rows={3}
                 placeholder="Share a secret, confession or vibe…"
                 aria-label="New Vibe Feed post"
@@ -217,10 +255,10 @@ function SecretsPage() {
                 </button>
                 <button
                   onClick={post}
-                  disabled={!draft.trim() && !image}
+                  disabled={posting || (!draft.trim() && !image)}
                   className="shrink-0 rounded-xl bg-gradient-vyzun px-4 py-2 text-sm font-semibold text-primary-foreground tap active:tap-active disabled:opacity-50"
                 >
-                  Post
+                  {posting ? "Checking…" : "Post"}
                 </button>
               </div>
             </div>
@@ -229,9 +267,9 @@ function SecretsPage() {
             <div className="mt-4 space-y-3">
               {state.feed.map((p) => (
                 <article key={p.id} className="glass-card p-4">
-                  <p className="text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between"><p className="text-xs text-muted-foreground">
                     {p.anonymous ? "Anonymous" : `@${p.author}`}
-                  </p>
+                  </p>{p.anonymous && <MessageSafetyMenu id={p.id} kind="feed" onBlocked={() => update(s => ({ feed: s.feed.filter(x => x.id !== p.id) }))} />}</div>
                   {p.body && <p className="mt-1.5 text-sm">{p.body}</p>}
                   {p.image && (
                     <img
@@ -241,7 +279,8 @@ function SecretsPage() {
                       className="mt-3 max-h-80 w-full rounded-xl border border-glass-border object-cover"
                     />
                   )}
-                  <div className="mt-3 flex gap-2">
+                  {p.anonymous && <SuspenseReveals onPay={setPaid} />}
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {REACTIONS.map((r) => (
                       <button
                         key={r.key}
@@ -263,6 +302,7 @@ function SecretsPage() {
           </section>
         )}
       </main>
+      {mediaError && tab === "inbox" && <p role="status" className="mx-auto max-w-lg px-5 pt-3 text-sm text-muted-foreground">{mediaError}</p>}
 
       <button
         onClick={() => setChatsOpen(true)}
@@ -276,6 +316,7 @@ function SecretsPage() {
       </button>
 
       <DirectChatsSheet open={chatsOpen} onClose={() => setChatsOpen(false)} />
+      <PaidActionSheet action={paid} onClose={() => setPaid(null)} />
     </div>
   );
 }
