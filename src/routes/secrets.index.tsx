@@ -17,7 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { moderateMessage } from "@/lib/message-safety.functions";
 
 export const Route = createFileRoute("/secrets/")({
-  validateSearch: (search: Record<string, unknown>) => ({ to: typeof search.to === "string" ? search.to.replace(/^@/, "").slice(0, 30) : undefined }),
+  validateSearch: (search: Record<string, unknown>): { to?: string } => typeof search['to'] === "string" ? { to: search['to'].replace(/^@/, "").slice(0, 30) } : {},
   head: () => ({
     meta: [
       { title: "VYZUN Secrets — Anonymous Inbox, Vibe Feed & Campus Map" },
@@ -105,13 +105,18 @@ function SecretsPage() {
     if (!session) { setMediaError("Sign in to publish a confession."); return; }
     if (image) { setMediaError("Photo posts need image moderation before public publishing; please post text for now."); return; }
     setPosting(true);
-    try { const safe = await moderation({ data: { body } }); if (!safe.allowed) { setMediaError("Bullying or hate speech is prohibited."); return; } }
+    let postId = "";
+    try { const safe = await moderation({ data: { body } }); if (!safe.allowed) { setMediaError("Bullying or hate speech is prohibited."); return; }
+      const { data: saved, error } = await supabase.from("vibe_feed").insert({ author_id: session.user.id, body, is_anonymous: anon, moderation_state: "clean" }).select("id").single();
+      if (error || !saved) { setMediaError("Post could not be published."); return; }
+      postId = saved.id;
+    }
     catch { setMediaError("Safety checks are unavailable. Post was not published."); return; }
     finally { setPosting(false); }
     update((s) => ({
       feed: [
         {
-          id: crypto.randomUUID(),
+          id: postId,
           author: anon ? "anon" : s.profile.username,
           anonymous: anon,
           body,
@@ -174,7 +179,7 @@ function SecretsPage() {
       <main className="mx-auto max-w-lg px-5">
         {tab === "inbox" && (
           <section className="space-y-3">
-            <SendSecretPanel username={state.profile.username} initialTo={to} />
+            <SendSecretPanel username={state.profile.username} initialTo={to ?? ""} />
             {inbox.isLoading && session && <p role="status" className="text-sm text-muted-foreground">Loading inbox…</p>}
             {inbox.isError && <p role="alert" className="text-sm text-destructive">Inbox could not be loaded.</p>}
             {messages.length === 0 && !inbox.isLoading && (

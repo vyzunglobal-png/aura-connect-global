@@ -7,16 +7,6 @@ import type { PaidAction } from "./PaidActionSheet";
 
 const DAY = 24 * 60 * 60 * 1000;
 
-const TIERS: { price: string; title: string; unlocks: string }[] = [
-  { price: "$0.99", title: "Tier 1 Hint", unlocks: "Their major & zodiac sign" },
-  { price: "$2.99", title: "Tier 2 Hint", unlocks: "Mutual friends count & Instagram teaser" },
-  {
-    price: "$9.99",
-    title: "Tier 3 Hint",
-    unlocks: "Approximate location (same campus or nearby building), a blurred photo teaser and a chat invite they can accept",
-  },
-];
-
 function useCountdown(createdAt: number) {
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
