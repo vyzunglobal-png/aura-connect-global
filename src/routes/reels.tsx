@@ -1,4 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { ReelStudio } from "@/components/vyzun/ReelStudio";
+import { ReelCommerce } from "@/components/vyzun/ReelCommerce";
+import { PaidActionSheet, type PaidAction } from "@/components/vyzun/PaidActionSheet";
+import { withSponsoredSlots } from "@/lib/reel-ad-engine";
 import { useRef, useState } from "react";
 import {
   BadgeCheck,
@@ -10,6 +15,8 @@ import {
   Music2,
   Plus,
   Share2,
+  ShoppingBag,
+  Megaphone,
 } from "lucide-react";
 import { useVyzun, type ReactionKey } from "@/lib/vyzun-store";
 import { cn } from "@/lib/utils";
@@ -24,6 +31,8 @@ export const Route = createFileRoute("/reels")({
           "Watch full-screen vertical reels on VYZUN, vibe with creators and build your audience. Comedy, trending and more.",
       },
       { property: "og:title", content: "VYZUN Reels — Vertical Video Feed" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
       {
         property: "og:description",
         content: "Full-screen vertical video, VYZUN reactions and creator discovery.",
@@ -77,6 +86,16 @@ const REELS: Reel[] = [
     audio: "Original audio — midnight.tales",
     counts: { vibe: 88000, curious: 31000, savage: 4200, lol: 9100 },
   },
+  {
+    id: "vyzun-create",
+    creator: "VYZUN",
+    verified: false,
+    caption: "Your campus. Your story. Make your first original Reel.",
+    hashtags: ["#vyzunaura", "#campusvibes"],
+    views: "0",
+    audio: "Create an original sound",
+    counts: { vibe: 0, curious: 0, savage: 0, lol: 0 },
+  },
 ];
 
 function ReelsPage() {
@@ -86,6 +105,9 @@ function ReelsPage() {
   const [burst, setBurst] = useState<string | null>(null);
   const [pendingVibe, setPendingVibe] = useState<string | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
+  const [studioOpen, setStudioOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [paid, setPaid] = useState<PaidAction | null>(null);
 
   function toggleVibeWith(creator: string) {
     const vibing = state.vibingWith.includes(creator);
@@ -103,7 +125,7 @@ function ReelsPage() {
 
   return (
     <div className="fixed inset-0 bottom-0 flex flex-col bg-background">
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center gap-2 bg-gradient-to-b from-background/90 to-transparent px-4 pb-6 pt-4">
+      <div className="absolute inset-x-0 top-0 z-20 flex flex-wrap items-center gap-2 bg-gradient-to-b from-background/90 to-transparent px-4 pb-6 pt-4">
         <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
         {CATEGORIES.map((c) => (
           <button
@@ -118,19 +140,29 @@ function ReelsPage() {
           </button>
         ))}
         </div>
-        <button
+        <Button
+          onClick={() => setStudioOpen(true)}
           aria-label="Create Reel"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-vyzun text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active"
+          className="h-9 shrink-0 rounded-xl bg-gradient-vyzun px-3 text-xs text-primary-foreground shadow-[var(--glow-cyan)]"
         >
-          <Plus className="h-5 w-5" />
-        </button>
+          <Plus className="h-5 w-5" /> Create Reel
+        </Button>
       </div>
 
       <div
         ref={scroller}
-        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain"
+        className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain pb-24"
       >
-        {REELS.map((reel) => {
+        {withSponsoredSlots(REELS).map((item) => {
+          if (item.kind === "ad") return <section key={`ad-${item.slot}`} data-sponsored-slot={item.slot} className="relative flex h-[calc(100dvh-4.5rem)] snap-start flex-col items-center justify-center gap-4 overflow-hidden bg-secondary px-6 pb-24 pt-24 text-center">
+            <span className="rounded-full border border-gold/50 px-3 py-1 text-xs font-semibold text-gold">Sponsored</span>
+            <Megaphone className="h-14 w-14 text-cyan" />
+            <h2 className="font-display text-2xl font-bold">VYZUN for brands</h2>
+            <p className="max-w-xs text-sm text-muted-foreground">Bring your next campaign to campus creators.</p>
+            <Button className="h-auto whitespace-normal bg-gradient-vyzun py-3" onClick={() => setPaid({ title: "Native Reel Sponsorship", price: "Custom campaign quote", description: "Request a native sponsored video placement. This is a house promotion; external ad delivery and rewarded-ad payouts are not connected." })}>Explore sponsorship</Button>
+            <span className="text-[11px] text-muted-foreground">House promotion · no cash reward</span>
+          </section>;
+          const reel = item.reel;
           const mine = reactions[reel.id] ?? null;
           const vibing = state.vibingWith.includes(reel.creator);
           const pending = pendingVibe === reel.creator;
@@ -177,12 +209,13 @@ function ReelsPage() {
                     </div>
                     <p className="mt-3 text-sm">{reel.caption}</p>
                     <p className="mt-1 text-xs text-cyan">{reel.hashtags.join(" ")}</p>
+                    <Button variant="outline" onClick={() => setProductsOpen(true)} className="mt-3 h-auto max-w-full whitespace-normal border-cyan/40 bg-background/60 px-2 py-2 text-left text-[11px]"><ShoppingBag />Shop creator picks · Affiliate</Button>
                     <p className="mt-2 flex min-w-0 items-center gap-1.5 truncate text-xs text-muted-foreground">
                       <Music2 className="anim-sweep h-3.5 w-3.5 shrink-0" /> {reel.audio} · {reel.views} views
                     </p>
                   </div>
 
-                  <div className="flex shrink-0 flex-col items-center gap-4 drop-shadow-lg">
+                   <div className="flex w-11 shrink-0 flex-col items-center gap-3 drop-shadow-lg">
                     <span className="grid h-11 w-11 place-items-center rounded-full border-2 border-cyan bg-gradient-vyzun text-sm font-bold text-primary-foreground">
                       {reel.creator[0]?.toUpperCase()}
                     </span>
@@ -230,6 +263,9 @@ function ReelsPage() {
           );
         })}
       </div>
+      <ReelStudio open={studioOpen} onClose={() => setStudioOpen(false)} />
+      <ReelCommerce open={productsOpen} onClose={() => setProductsOpen(false)} />
+      <PaidActionSheet action={paid} onClose={() => setPaid(null)} />
 
     </div>
   );
