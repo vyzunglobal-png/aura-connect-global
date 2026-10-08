@@ -1659,6 +1659,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      block_secret_sender: { Args: { _message_id: string }; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
