@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Ban, Copy, Flag, Search, Send, Share2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useVyzun } from "@/lib/vyzun-store";
 import { SendSecretPanel } from "@/components/vyzun/SendSecretPanel";
 import { MessageSafetyMenu } from "@/components/vyzun/MessageSafetyMenu";
@@ -28,32 +27,6 @@ export const Route = createFileRoute("/secrets/chat")({
 
 function SecretChatPage() {
   const { state, update } = useVyzun();
-  const link = `vyzun.app/ask/@${state.profile.username}`;
-  const [draft, setDraft] = useState("");
-  const [target, setTarget] = useState("");
-  const [notice, setNotice] = useState<string | null>(null);
-
-  function sendSecret() {
-    const body = draft.trim();
-    if (!body || !target.trim()) {
-      setNotice("Add a username and a message first.");
-      return;
-    }
-    update((s) => ({
-      secrets: [
-        {
-          id: crypto.randomUUID(),
-          body,
-          hint: `Sent to @${target.replace(/^@/, "")}`,
-          createdAt: Date.now(),
-        },
-        ...s.secrets,
-      ],
-    }));
-    setDraft("");
-    setNotice("Secret sent anonymously. It stays moderated for safety.");
-  }
-
   return (
     <div className="pb-28">
       <header className="sticky top-0 z-30 flex items-center gap-3 bg-background/75 px-5 py-4 backdrop-blur-xl">
