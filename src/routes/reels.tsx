@@ -126,13 +126,13 @@ function ReelsPage() {
   return (
     <div className="fixed inset-0 bottom-0 flex flex-col bg-background">
       <div className="absolute inset-x-0 top-0 z-20 flex flex-wrap items-center gap-2 bg-gradient-to-b from-background/90 to-transparent px-4 pb-6 pt-4">
-        <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
+        <div className="grid w-full min-w-0 grid-cols-4 gap-1 sm:flex sm:w-auto sm:flex-1">
         {CATEGORIES.map((c) => (
           <button
             key={c}
             onClick={() => setCategory(c)}
             className={cn(
-              "shrink-0 rounded-full border border-glass-border px-3.5 py-1.5 text-xs tap active:tap-active",
+              "rounded-full border border-glass-border px-1 py-1.5 text-[10px] sm:px-3.5 sm:text-xs tap active:tap-active",
               category === c && "bg-gradient-vyzun text-primary-foreground",
             )}
           >
@@ -143,7 +143,7 @@ function ReelsPage() {
         <Button
           onClick={() => setStudioOpen(true)}
           aria-label="Create Reel"
-          className="h-9 shrink-0 rounded-xl bg-gradient-vyzun px-3 text-xs text-primary-foreground shadow-[var(--glow-cyan)]"
+          className="ml-auto h-9 shrink-0 rounded-xl bg-gradient-vyzun px-3 text-xs text-primary-foreground shadow-[var(--glow-cyan)]"
         >
           <Plus className="h-5 w-5" /> Create Reel
         </Button>

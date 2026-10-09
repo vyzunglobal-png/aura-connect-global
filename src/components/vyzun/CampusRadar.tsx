@@ -54,7 +54,7 @@ export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
               description: "Replace the campus banner and audio for one hour with your own message.",
             })
           }
-          className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-magenta/50 bg-background/70 px-3 py-1.5 text-[11px] font-semibold backdrop-blur-md tap active:tap-active"
+          className="absolute left-3 top-3 flex w-[calc(55%-1rem)] items-center gap-1 rounded-xl border border-magenta/50 bg-background/70 px-2 py-1.5 text-[10px] font-semibold backdrop-blur-md tap active:tap-active"
         >
           <Radio className="h-3.5 w-3.5 text-magenta" /> Campus Takeover · $199/hr
         </button>
@@ -67,7 +67,7 @@ export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
               description: "A glowing halo around your pin on every campus map.",
             })
           }
-          className="absolute right-3 top-3 flex items-center gap-1.5 rounded-full border border-gold/50 bg-background/70 px-3 py-1.5 text-[11px] font-semibold backdrop-blur-md tap active:tap-active"
+          className="absolute right-3 top-3 flex w-[calc(45%-1rem)] items-center gap-1 rounded-xl border border-gold/50 bg-background/70 px-2 py-1.5 text-[10px] font-semibold backdrop-blur-md tap active:tap-active"
         >
           <Sparkles className="h-3.5 w-3.5 text-gold" /> VIP Halo · $4.99/mo
         </button>
