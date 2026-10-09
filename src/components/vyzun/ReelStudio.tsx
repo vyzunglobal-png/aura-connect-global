@@ -6,20 +6,24 @@ export function ReelStudio({ open, onClose }: { open: boolean; onClose: () => vo
   const video = useRef<HTMLVideoElement>(null);
   const stream = useRef<MediaStream | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
+  const active = useRef(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [recording, setRecording] = useState(false);
   const [ready, setReady] = useState(false);
   const [clip, setClip] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   useEffect(() => {
-    if (!open) return;
-    return () => { if (recorder.current?.state === "recording") recorder.current.stop(); stream.current?.getTracks().forEach(t => t.stop()); stream.current = null; setReady(false); setRecording(false); };
+    active.current = open;
+    if (!open) { setReady(false); setRecording(false); return; }
+    return () => { active.current = false; if (timer.current) clearTimeout(timer.current); if (recorder.current?.state === "recording") recorder.current.stop(); stream.current?.getTracks().forEach(t => t.stop()); stream.current = null; };
   }, [open]);
   useEffect(() => () => { if (clip) URL.revokeObjectURL(clip); }, [clip]);
   async function startCamera() {
     setError(null);
     try {
       const next = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+      if (!active.current) { next.getTracks().forEach(t => t.stop()); return; }
       stream.current = next;
       if (video.current) { video.current.srcObject = next; await video.current.play(); }
       setReady(true);
@@ -32,10 +36,10 @@ export function ReelStudio({ open, onClose }: { open: boolean; onClose: () => vo
     const next = new MediaRecorder(stream.current);
     const chunks: Blob[] = [];
     next.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-    next.onstop = () => { setClip(URL.createObjectURL(new Blob(chunks, { type: next.mimeType }))); setRecording(false); };
+    next.onstop = () => { if (timer.current) clearTimeout(timer.current); if (!active.current) return; setClip(URL.createObjectURL(new Blob(chunks, { type: next.mimeType }))); setRecording(false); };
     recorder.current = next;
     next.start(); setRecording(true);
-    window.setTimeout(() => { if (next.state === "recording") next.stop(); }, 60_000);
+    timer.current = setTimeout(() => { if (next.state === "recording") next.stop(); }, 60_000);
   }
   if (!open) return null;
   return <div className="fixed inset-0 z-[65] flex items-center justify-center bg-background/90 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Create Reel studio">
