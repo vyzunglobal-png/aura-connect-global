@@ -355,3 +355,15 @@
 }
 .aura-hologram { animation: vz-hologram 7s ease-in-out infinite; box-shadow: var(--glow-neon), var(--glow-cyan); }
 @media (prefers-reduced-motion: reduce) { .aura-hologram { animation: none; } }
+
+@utility chamfer {
+  clip-path: polygon(22px 0, calc(100% - 22px) 0, 100% 22px, 100% calc(100% - 22px), calc(100% - 22px) 100%, 22px 100%, 0 calc(100% - 22px), 0 22px);
+}
+@utility chamfer-inner {
+  clip-path: polygon(20px 0, calc(100% - 20px) 0, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0 calc(100% - 20px), 0 20px);
+}
+@utility anim-spin-slow {
+  animation: vz-spin 14s linear infinite;
+  will-change: transform;
+}
+@keyframes vz-spin { to { transform: rotate(360deg); } }
