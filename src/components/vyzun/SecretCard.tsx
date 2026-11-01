@@ -4,8 +4,10 @@ import { SuspenseReveals } from "./SuspenseReveals";
 import { MessageSafetyMenu } from "./MessageSafetyMenu";
 import type { SecretMessage } from "@/lib/vyzun-store";
 import type { PaidAction } from "./PaidActionSheet";
+import { secretDropLink, secretExpiresAt, SECRET_LIFETIME_MS } from "@/lib/vyzun-links";
+import { useVyzun } from "@/lib/vyzun-store";
 
-const DAY = 24 * 60 * 60 * 1000;
+const DAY = SECRET_LIFETIME_MS;
 
 function useCountdown(createdAt: number) {
   const [now, setNow] = useState<number | null>(null);
@@ -15,7 +17,7 @@ function useCountdown(createdAt: number) {
     return () => clearInterval(t);
   }, []);
   if (now === null) return { left: DAY, label: "--:--:--" };
-  const left = Math.max(0, createdAt + DAY - now);
+  const left = Math.max(0, secretExpiresAt(createdAt) - now);
   const h = Math.floor(left / 3_600_000);
   const m = Math.floor((left % 3_600_000) / 60_000);
   const s = Math.floor((left % 60_000) / 1000);
@@ -34,6 +36,7 @@ export function SecretCard({
   onPay: (a: PaidAction) => void;
 }) {
   const [chatOpen, setChatOpen] = useState(false);
+  const { state } = useVyzun();
   const [draft, setDraft] = useState("");
   const { left, label } = useCountdown(message.createdAt);
 
@@ -42,7 +45,7 @@ export function SecretCard({
   }, [left, onDelete]);
 
   async function share() {
-    const url = `${window.location.origin}/secrets`;
+    const url = secretDropLink(window.location.origin, state.profile.username);
     const text = `Someone sent me a secret on VYZUN 👻 Send me yours:`;
     if (navigator.share) await navigator.share({ text, url }).catch(() => {});
     else await navigator.clipboard?.writeText(`${text} ${url}`);
@@ -52,7 +55,7 @@ export function SecretCard({
     <article className="glass-card p-4">
       <div className="flex items-center justify-between text-[11px]">
         <span className="flex items-center gap-1 font-semibold text-destructive" aria-label="Time until this secret burns">
-          <Flame className="h-3.5 w-3.5" /> Burns in {label}
+          <Flame className="h-3.5 w-3.5" /> 24-Hour Burn · {label}
         </span>
         <span className="flex items-center gap-1 text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald" /> Private
