@@ -1,4 +1,9 @@
 # VYZUN finalization
+- [ ] Part 1: clean recipient links and full-screen messages, preserving four tabs and all offers.
+- [ ] Part 1: contextual AI companion and honest match/network states.
+- [ ] Part 1: camera lifecycle, Aura sharing and interactive campus radar polish.
+- [ ] Part 1: verify navigation, share destinations, safety and layouts.
+- [ ] Part 1: verify/apply private chat encryption and burn policies; blocked while Lovable Cloud is unreachable.
 - [x] Expose all 18 monetization offer entry points without duplicate controls.
 - [x] Add recurring house-sponsored reel placements, affiliate product panel and private recording studio.
 - [x] Add post-scan holographic result and current-origin referral sharing.
