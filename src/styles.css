@@ -86,6 +86,7 @@
     var(--vz-violet) 52%,
     var(--vz-magenta) 100%
   );
+  --gradient-secret: linear-gradient(120deg, var(--vz-violet), var(--vz-magenta));
   --gradient-surface: linear-gradient(
     160deg,
     oklch(0.99 0.01 280 / 10%),
@@ -158,6 +159,8 @@
 @utility bg-gradient-vyzun {
   background-image: var(--gradient-vyzun);
 }
+@utility bg-gradient-secret { background-image: var(--gradient-secret); }
+@utility text-gradient-secret { background-image: var(--gradient-secret); background-clip: text; color: transparent; }
 
 @utility glass-card {
   background-image: var(--gradient-surface);
@@ -354,6 +357,9 @@
   50% { transform: perspective(1000px) rotateY(3deg) rotateX(-1deg); }
 }
 .aura-hologram { animation: vz-hologram 7s ease-in-out infinite; box-shadow: var(--glow-neon), var(--glow-cyan); }
+.radar-perspective { perspective: 900px; touch-action: pan-y; }
+.radar-trinket { transform-style: preserve-3d; transition: transform 180ms ease; }
+.radar-trinket:hover { transform: rotateX(15deg) rotateY(-15deg) scale(1.08); }
 @media (prefers-reduced-motion: reduce) { .aura-hologram { animation: none; } }
 
 @utility chamfer {
@@ -367,3 +373,4 @@
   will-change: transform;
 }
 @keyframes vz-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .anim-spin-slow { animation: none; } }
