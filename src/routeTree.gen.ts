@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReelsRouteImport } from './routes/reels'
+import { Route as AskUsernameRouteImport } from './routes/ask.$username'
 import { Route as SecretsIndexRouteImport } from './routes/secrets.index'
 import { Route as SecretsChatRouteImport } from './routes/secrets.chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -28,6 +35,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const ReelsRoute = ReelsRouteImport.update({
   id: '/reels',
   path: '/reels',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AskUsernameRoute = AskUsernameRouteImport.update({
+  id: '/ask/$username',
+  path: '/ask/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SecretsIndexRoute = SecretsIndexRouteImport.update({
@@ -43,38 +55,68 @@ const SecretsChatRoute = SecretsChatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/reels': typeof ReelsRoute
+  '/ask/$username': typeof AskUsernameRoute
   '/secrets/chat': typeof SecretsChatRoute
   '/secrets/': typeof SecretsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/reels': typeof ReelsRoute
+  '/ask/$username': typeof AskUsernameRoute
   '/secrets/chat': typeof SecretsChatRoute
   '/secrets': typeof SecretsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/reels': typeof ReelsRoute
+  '/ask/$username': typeof AskUsernameRoute
   '/secrets/chat': typeof SecretsChatRoute
   '/secrets/': typeof SecretsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/reels' | '/secrets/chat' | '/secrets/'
+  fullPaths:
+    | '/'
+    | '/messages'
+    | '/profile'
+    | '/reels'
+    | '/ask/$username'
+    | '/secrets/chat'
+    | '/secrets/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/reels' | '/secrets/chat' | '/secrets'
-  id: '__root__' | '/' | '/profile' | '/reels' | '/secrets/chat' | '/secrets/'
+  to:
+    | '/'
+    | '/messages'
+    | '/profile'
+    | '/reels'
+    | '/ask/$username'
+    | '/secrets/chat'
+    | '/secrets'
+  id:
+    | '__root__'
+    | '/'
+    | '/messages'
+    | '/profile'
+    | '/reels'
+    | '/ask/$username'
+    | '/secrets/chat'
+    | '/secrets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MessagesRoute: typeof MessagesRoute
   ProfileRoute: typeof ProfileRoute
   ReelsRoute: typeof ReelsRoute
+  AskUsernameRoute: typeof AskUsernameRoute
   SecretsChatRoute: typeof SecretsChatRoute
   SecretsIndexRoute: typeof SecretsIndexRoute
 }
@@ -86,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -100,6 +149,13 @@ declare module '@tanstack/react-router' {
       path: '/reels'
       fullPath: '/reels'
       preLoaderRoute: typeof ReelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ask/$username': {
+      id: '/ask/$username'
+      path: '/ask/$username'
+      fullPath: '/ask/$username'
+      preLoaderRoute: typeof AskUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/secrets/': {
@@ -121,8 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MessagesRoute: MessagesRoute,
   ProfileRoute: ProfileRoute,
   ReelsRoute: ReelsRoute,
+  AskUsernameRoute: AskUsernameRoute,
   SecretsChatRoute: SecretsChatRoute,
   SecretsIndexRoute: SecretsIndexRoute,
 }

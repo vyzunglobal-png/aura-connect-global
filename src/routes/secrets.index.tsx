@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { ImagePlus, MessageCircle, Phone, Radar, Video, X } from "lucide-react";
 import { REACTIONS, useVyzun, type ReactionKey } from "@/lib/vyzun-store";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { moderateMessage } from "@/lib/message-safety.functions";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/secrets/")({
   validateSearch: (search: Record<string, unknown>): { to?: string } => typeof search['to'] === "string" ? { to: search['to'].replace(/^@/, "").slice(0, 30) } : {},
@@ -142,7 +143,9 @@ function SecretsPage() {
           <h1 className="font-display text-2xl font-bold tracking-tight">
             <span aria-hidden>👻 </span>SECRETS
           </h1>
-          <button
+          <div className="flex items-center gap-2">
+          <Link to="/messages" aria-label="Open messages" className="bg-gradient-secret grid h-11 w-11 place-items-center rounded-xl text-primary-foreground shadow-[var(--glow-neon)]"><MessageCircle className="h-5 w-5" /></Link>
+          <Button variant="outline" size="icon"
             onClick={() => setTab("map")}
             aria-label="Open campus map"
             className={cn(
@@ -151,7 +154,8 @@ function SecretsPage() {
             )}
           >
             <Radar className="h-5 w-5" />
-          </button>
+          </Button>
+          </div>
         </div>
         <div className="mt-4 grid grid-cols-3 gap-1 rounded-2xl border border-glass-border bg-background/40 p-1">
           {(
@@ -309,7 +313,7 @@ function SecretsPage() {
       </main>
       {mediaError && tab === "inbox" && <p role="status" className="mx-auto max-w-lg px-5 pt-3 text-sm text-muted-foreground">{mediaError}</p>}
 
-      <button
+      <Button
         onClick={() => setChatsOpen(true)}
         className="fixed inset-x-6 bottom-24 z-30 mx-auto flex max-w-sm items-center justify-center gap-3 rounded-2xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground shadow-lg tap active:tap-active"
       >
@@ -318,7 +322,7 @@ function SecretsPage() {
           <Phone className="h-4 w-4" />
           <Video className="h-4 w-4" />
         </span>
-      </button>
+      </Button>
 
       <DirectChatsSheet open={chatsOpen} onClose={() => setChatsOpen(false)} />
       <PaidActionSheet action={paid} onClose={() => setPaid(null)} />

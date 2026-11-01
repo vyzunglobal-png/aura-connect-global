@@ -87,38 +87,6 @@ function generateAura(mode: AuraCard["mode"], photo?: string | null): AuraCard {
   };
 }
 
-/** Grab a single still frame from the front camera as a data URL. */
-async function captureSelfie() {
-  const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-  try {
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.muted = true;
-    await video.play();
-    await new Promise((r) => window.setTimeout(r, 350));
-    const size = Math.min(video.videoWidth, video.videoHeight) || 480;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return null;
-    ctx.drawImage(
-      video,
-      (video.videoWidth - size) / 2,
-      (video.videoHeight - size) / 2,
-      size,
-      size,
-      0,
-      0,
-      size,
-      size,
-    );
-    return canvas.toDataURL("image/jpeg", 0.9);
-  } finally {
-    stream.getTracks().forEach((t) => t.stop());
-  }
-}
-
 function ScanPage() {
   const { state, update } = useVyzun();
   const [mode, setMode] = useState<AuraCard["mode"]>("secrets");
@@ -132,7 +100,16 @@ function ScanPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
-  useEffect(() => () => streamRef.current?.getTracks().forEach(t => t.stop()), []);
+  const mountedRef = useRef(true);
+  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
+    };
+  }, []);
 
   async function requestCamera() {
     setCameraError(null);
@@ -140,12 +117,14 @@ function ScanPage() {
     try {
       streamRef.current?.getTracks().forEach(t => t.stop());
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      if (!mountedRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
       streamRef.current = stream;
       const video = videoRef.current;
       if (!video) throw new Error("Camera preview unavailable");
       video.srcObject = stream;
       await video.play();
       await new Promise(resolve => window.setTimeout(resolve, 1400));
+      if (!mountedRef.current) return;
       const canvas = document.createElement("canvas");
       const size = Math.min(video.videoWidth, video.videoHeight);
       if (!size) throw new Error("No camera frame");
@@ -156,9 +135,10 @@ function ScanPage() {
       const shot = canvas.toDataURL("image/jpeg", 0.9);
       setPhoto(shot);
       runScan(shot);
-    } catch {
+    } catch (error) {
+      if (!mountedRef.current) return;
       setScanning(false);
-      setCameraError("Camera unavailable. Allow camera access in your browser settings and try again.");
+      setCameraError(error instanceof DOMException && error.name === "NotAllowedError" ? "Camera permission was declined. Allow camera access, then try again." : "Camera unavailable. Check your front camera and try again. Gallery photos are not used.");
     } finally {
       streamRef.current?.getTracks().forEach(t => t.stop());
       streamRef.current = null;
@@ -169,7 +149,8 @@ function ScanPage() {
     const usePhoto = nextPhoto === undefined ? photo : nextPhoto;
     setScanning(true);
     setNotice(null);
-    window.setTimeout(() => {
+    scanTimerRef.current = window.setTimeout(() => {
+      if (!mountedRef.current) return;
       const next = generateAura(mode, usePhoto);
       setCard(next);
       setResultOpen(true);
@@ -275,7 +256,7 @@ function ScanPage() {
           {MODES.find((m) => m.key === mode)?.blurb} · AI entertainment experience, not a prediction.
         </p>
 
-        <div className="glass-card relative mt-5 aspect-[3/4] overflow-hidden">
+         <div className="glass-card relative mt-5 aspect-[3/4] overflow-hidden">
           <div className="absolute inset-0 bg-gradient-vyzun opacity-10" />
           <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 h-full w-full -scale-x-100 object-cover" />
           <div className="absolute inset-6 rounded-3xl border border-glass-border" />
@@ -303,13 +284,13 @@ function ScanPage() {
           </p>
         )}
 
-        <button
+        <Button
           onClick={requestCamera}
           disabled={scanning}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3.5 font-semibold text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active disabled:opacity-60"
         >
           {scanning ? "Scanning…" : "📸 Start Live Face Scan"}
-        </button>
+        </Button>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
           ⚡ Real-Time Camera Scan Only • Gallery Upload Disabled for Accuracy
         </p>
@@ -339,7 +320,7 @@ function ScanPage() {
                className="mt-4 h-auto w-full whitespace-normal rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground tap active:tap-active disabled:opacity-60"
             >
               <Share2 className="h-4 w-4" />
-               {busy === "share" ? "Preparing image…" : "✨ Share Aura Card to Instagram/TikTok Story"}
+                {busy === "share" ? "Preparing image…" : "✨ Share to IG / Snapchat / TikTok"}
              </Button>
              <p className="mt-2 text-center text-xs text-muted-foreground">Entertainment reading · not a measured personality or campus ranking.</p>
             <div className="mt-3 grid grid-cols-2 gap-3">

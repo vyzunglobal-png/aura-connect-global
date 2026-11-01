@@ -23,7 +23,7 @@ export function CrushMatcher() {
 
       <p className="mt-4 flex items-center gap-2 rounded-xl border border-glass-border px-4 py-3 text-sm">
         <Lock className="h-4 w-4 shrink-0 text-cyan" />
-        {isAuthenticated ? "Your private pick is sealed and waiting." : "Sign in to seal a private pick."}
+        {isAuthenticated ? "No verified mutual match yet." : "Sign in to seal a private pick."}
       </p>
 
       <button

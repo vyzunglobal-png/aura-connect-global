@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { sendModeratedSecret } from "@/lib/message-safety.functions";
 import { Copy, Search, Send, Share2 } from "lucide-react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { secretDropLink } from "@/lib/vyzun-links";
 import { useVyzunSession } from "@/hooks/use-vyzun-session";
 
 const schema = z.object({
@@ -16,7 +17,7 @@ export function SendSecretPanel({ username, initialTo = "" }: { username: string
   const handle = profile?.username ?? username;
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
-  const link = `${origin}/secrets?to=${encodeURIComponent(handle)}`;
+  const link = origin ? secretDropLink(origin, handle) : "";
   const sendMessage = useServerFn(sendModeratedSecret);
   const [to, setTo] = useState(initialTo);
   useEffect(() => { if (initialTo) setTo(initialTo); }, [initialTo]);
@@ -52,14 +53,14 @@ export function SendSecretPanel({ username, initialTo = "" }: { username: string
     <div className="space-y-3">
       <div className="glass-card p-4">
         <p className="text-xs text-muted-foreground">Your anonymous VYZUN link</p>
-        <p className="mt-1 truncate font-semibold text-cyan">{link}</p>
+        <p className="text-gradient-secret mt-1 break-all font-semibold">{origin ? `${new URL(origin).host}/ask/@${handle}` : `/ask/@${handle}`}</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button onClick={copy} className="flex items-center justify-center gap-1.5 rounded-xl border border-cyan/60 py-2.5 text-sm font-semibold shadow-[var(--glow-cyan)] tap active:tap-active">
+          <Button variant="outline" onClick={copy} disabled={!origin} className="h-auto border-magenta/60 py-2.5 text-sm text-magenta shadow-[var(--glow-neon)]">
             <Copy className="h-4 w-4" /> Copy Link
-          </button>
-          <button onClick={share} className="flex items-center justify-center gap-1.5 rounded-xl bg-gradient-vyzun py-2.5 text-sm font-semibold text-primary-foreground tap active:tap-active">
+          </Button>
+          <Button onClick={share} disabled={!origin} className="bg-gradient-secret h-auto py-2.5 text-sm text-primary-foreground">
             <Share2 className="h-4 w-4" /> Share Link
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -86,13 +87,13 @@ export function SendSecretPanel({ username, initialTo = "" }: { username: string
           aria-label="Secret message"
           className="mt-2 w-full resize-none rounded-xl border border-glass-border bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground"
         />
-        <button
+        <Button
           onClick={send}
           disabled={sending}
           className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground shadow-[var(--glow-cyan)] tap active:tap-active disabled:opacity-60"
         >
           <Send className="h-4 w-4" /> {sending ? "Sending…" : "Send Secret Message"}
-        </button>
+        </Button>
         {status && <p aria-live="polite" className="mt-2 text-center text-xs text-muted-foreground">{status}</p>}
       </div>
     </div>

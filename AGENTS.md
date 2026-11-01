@@ -16,3 +16,6 @@
 - Route secret delivery through authenticated server-side AI moderation, consent and block checks; direct client inserts are intentionally revoked to prevent bypass.
 - Block anonymous senders through an ownership-checked database function that never returns sender identity.
 - Keep share links on the current app origin with recipient/referral parameters; never share an unimplemented branded domain.
+- Use secretDropLink for recipient URLs and route them through /ask/$username; share destinations must remain functional without a custom domain.
+- Reuse MessagesView in the full-screen messages route and chat sheet; never fabricate threads, delivery, calls, matches or campus totals when services are unavailable.
+- Keep AI provider helpers server-only and invoke the authenticated companion function with explicit creative context; AI never receives private chat history implicitly.
