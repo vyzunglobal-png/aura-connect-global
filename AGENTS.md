@@ -19,3 +19,4 @@
 - Use secretDropLink for recipient URLs and route them through /ask/$username; share destinations must remain functional without a custom domain.
 - Reuse MessagesView in the full-screen messages route and chat sheet; never fabricate threads, delivery, calls, matches or campus totals when services are unavailable.
 - Keep AI provider helpers server-only and invoke the authenticated companion function with explicit creative context; AI never receives private chat history implicitly.
+- Recover deployment-stale route chunks with one session-scoped document refresh per minute; repeated failures must remain visible and manually retryable rather than reload-looping.

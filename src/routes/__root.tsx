@@ -16,6 +16,8 @@ import { VyzunProvider, useVyzun } from "@/lib/vyzun-store";
 import { Splash } from "@/components/vyzun/Splash";
 import { Onboarding } from "@/components/vyzun/Onboarding";
 import { BottomNav } from "@/components/vyzun/BottomNav";
+import { isChunkLoadError, recoverChunkLoad } from "@/lib/chunk-recovery";
+import { Button } from "@/components/ui/button";
 
 function NotFoundComponent() {
   return (
@@ -43,6 +45,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    if (recoverChunkLoad(error, window.sessionStorage, () => window.location.reload())) return;
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
@@ -56,15 +59,16 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
+          <Button
             onClick={() => {
+              if (isChunkLoadError(error)) { window.location.reload(); return; }
               router.invalidate();
               reset();
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
-          </button>
+          </Button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
