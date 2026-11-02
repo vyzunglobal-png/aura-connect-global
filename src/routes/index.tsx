@@ -101,7 +101,7 @@ function ScanPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const [resultOpen, setResultOpen] = useState(false);
   const mountedRef = useRef(true);
-  const scanTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scanTimerRef = useRef<number | null>(null);
   useEffect(() => {
     mountedRef.current = true;
     return () => {
