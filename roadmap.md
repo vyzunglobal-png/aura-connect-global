@@ -1,4 +1,8 @@
 # VYZUN finalization
+- [ ] Part 2: Reels categories, thumb-accessible controls, truthful live feed and recurring fifth-slot sponsorship.
+- [ ] Part 2: squircle Profile, aligned actions, Posts/Reels/Aura Cards and compact creator offers.
+- [ ] Part 2: pinned AI starter prompts and private-chat media composer with honest availability states.
+- [ ] Part 2: verify live interactions, security boundaries and four-tab layouts.
 - [x] Part 1: clean recipient links and full-screen messages, preserving four tabs and all offers.
 - [x] Part 1: contextual AI companion and honest match/network states; actual gateway response verified, signed-in app flow blocked by Cloud outage.
 - [x] Part 1: camera lifecycle, Aura sharing and interactive campus radar polish.
