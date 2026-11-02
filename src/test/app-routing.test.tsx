@@ -22,6 +22,6 @@ describe("App routing", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
     const match = router.matchRoutes("/ask/@aurafan").at(-1);
     expect(match?.routeId).toBe("/ask/$username");
-    expect(match?.params.username).toBe("@aurafan");
+    expect(match?.params).toMatchObject({ username: "@aurafan" });
   });
 });

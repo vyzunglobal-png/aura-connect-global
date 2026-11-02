@@ -27,7 +27,7 @@ function Gauge({ value, label, color }: { value: number; label: string; color: s
       <svg viewBox="0 0 44 44" className="h-12 w-12 -rotate-90" style={{ filter: `drop-shadow(0 0 4px ${color})` }}>
         <circle cx="22" cy="22" r={r} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="4" />
         <circle cx="22" cy="22" r={r} fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - value / 100)} />
-        <text x="22" y="26" textAnchor="middle" className="rotate-90 fill-foreground text-[11px] font-bold" transform="rotate(90 22 22)">{value}</text>
+        <text x="22" y="26" textAnchor="middle" className="fill-foreground text-[11px] font-bold" transform="rotate(90 22 22)">{value}</text>
       </svg>
       <span className="text-center text-[9px] leading-tight text-muted-foreground">{label}</span>
     </div>

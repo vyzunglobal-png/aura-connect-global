@@ -1,9 +1,13 @@
 # VYZUN finalization
-- [ ] Part 1: clean recipient links and full-screen messages, preserving four tabs and all offers.
-- [ ] Part 1: contextual AI companion and honest match/network states.
-- [ ] Part 1: camera lifecycle, Aura sharing and interactive campus radar polish.
-- [ ] Part 1: verify navigation, share destinations, safety and layouts.
+- [x] Part 1: clean recipient links and full-screen messages, preserving four tabs and all offers.
+- [x] Part 1: contextual AI companion and honest match/network states; actual gateway response verified, signed-in app flow blocked by Cloud outage.
+- [x] Part 1: camera lifecycle, Aura sharing and interactive campus radar polish.
+- [x] Part 1: verify navigation, share destinations, safety and layouts; eight tests pass and desktop/phone checks show four tabs without overflow.
 - [ ] Part 1: verify/apply private chat encryption and burn policies; blocked while Lovable Cloud is unreachable.
+- [ ] Part 1: mutual-match selection/reveal and live campus rivalry totals; cannot verify or change authoritative data while Cloud is unreachable.
+- [ ] Part 1: native Apple/Google billing; requires a supported native client and provider setup, not available in this web-only project.
+- [ ] Part 1: anti-bot/anti-scraping limits; no standard backend rate-limit primitive, ad-hoc tradeoff requires user confirmation.
+- [ ] Part 1: official 8784.png and vyzun.app hostname; original file and connected domain unavailable, restored logo and working current-origin links preserved.
 - [x] Expose all 18 monetization offer entry points without duplicate controls.
 - [x] Add recurring house-sponsored reel placements, affiliate product panel and private recording studio.
 - [x] Add post-scan holographic result and current-origin referral sharing.
