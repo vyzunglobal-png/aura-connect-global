@@ -1,17 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BadgeCheck,
-  BarChart3,
   Camera,
   Crown,
-  Globe,
-  Lock,
   MessageCircle,
   QrCode,
   Settings,
   Sparkles,
-  TrendingUp,
   Wallet2,
   Gem,
   Plane,
@@ -25,6 +21,9 @@ import { CreatorDashboardSheet } from "@/components/vyzun/CreatorDashboardSheet"
 import { PrimeSheet } from "@/components/vyzun/PrimeSheet";
 import { SettingsSheet } from "@/components/vyzun/SettingsSheet";
 import { VibeWithButton } from "@/components/vyzun/VibeWithButton";
+import { QRCodeSVG } from "qrcode.react";
+import { ActionDialog } from "@/components/vyzun/ActionDialog";
+import { secretDropLink } from "@/lib/vyzun-links";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile")({
@@ -54,10 +53,14 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { state } = useVyzun();
   const { u } = Route.useSearch();
-  const [tab, setTab] = useState<"reels" | "aura" | "scans">("reels");
+  const [tab, setTab] = useState<"posts" | "reels" | "aura">("posts");
   const [sheet, setSheet] = useState<null | "prime" | "creator" | "settings">(null);
   const [studioOpen, setStudioOpen] = useState(false);
   const [paid, setPaid] = useState<PaidAction | null>(null);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrLink, setQrLink] = useState("");
+  const [qrNotice, setQrNotice] = useState<string | null>(null);
+  useEffect(() => { setQrLink(secretDropLink(window.location.origin, u ?? state.profile.username)); }, [state.profile.username, u]);
   const p = state.profile;
   const isSelf = !u || u.toLowerCase() === p.username.toLowerCase();
   const viewedName = isSelf ? p.displayName : (u ?? p.username);
@@ -73,17 +76,7 @@ function ProfilePage() {
         )}
         <div className="mt-2 flex items-center gap-4">
           <div className="relative">
-            <span className="grid h-20 w-20 place-items-center rounded-full bg-gradient-vyzun text-2xl font-bold text-primary-foreground">
-              {viewedHandle[0]?.toUpperCase()}
-            </span>
-            {isSelf && (
-              <button
-                aria-label="Change photo"
-                className="absolute -bottom-1 -right-1 grid h-8 w-8 place-items-center rounded-full border border-glass-border bg-background tap active:tap-active"
-              >
-                <Camera className="h-4 w-4" />
-              </button>
-            )}
+            <span className="profile-squircle grid h-20 w-20 place-items-center rounded-3xl border-2 border-cyan bg-gradient-vyzun text-2xl font-bold text-primary-foreground">{viewedHandle[0]?.toUpperCase()}</span>
           </div>
           <div className="min-w-0">
             <h1 className="flex items-center gap-1.5 truncate text-xl font-semibold">
@@ -110,76 +103,56 @@ function ProfilePage() {
 
         <div className="mt-4 flex gap-2">
           {isSelf ? (
-            <button className="flex-1 rounded-xl border border-glass-border py-2.5 text-sm tap active:tap-active">
+            <Button variant="outline" onClick={() => setSheet("settings")} className="h-11 flex-1">
               Edit Profile
-            </button>
+            </Button>
           ) : (
             <>
               <VibeWithButton username={viewedHandle} />
-              <button className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl border border-glass-border py-2.5 text-sm tap active:tap-active">
+              <Button asChild variant="outline" className="flex min-w-0 flex-1"><Link to="/messages">
                 <MessageCircle className="h-4 w-4 shrink-0" />
                 <span className="truncate">Message</span>
-              </button>
+              </Link></Button>
             </>
           )}
-          <button
+          <Button variant="outline" onClick={() => setQrOpen(true)}
             aria-label="Share QR"
             className="grid w-11 shrink-0 place-items-center rounded-xl border border-glass-border tap active:tap-active"
           >
             <QrCode className="h-4 w-4" />
-          </button>
+          </Button>
           {isSelf && (
-            <button
+            <Button variant="outline"
               onClick={() => setSheet("settings")}
               aria-label="Settings"
               className="grid w-11 shrink-0 place-items-center rounded-xl border border-glass-border tap active:tap-active"
             >
               <Settings className="h-4 w-4" />
-            </button>
+            </Button>
           )}
         </div>
 
 
-        <div className="mt-4 grid gap-3">
-          <button
-            onClick={() => setSheet("prime")}
-            className="glass-card flex items-center gap-3 p-4 text-left tap active:tap-active"
-          >
-             <Crown className="h-5 w-5 text-gold" />
-            <span>
-               <span className="block text-sm font-semibold">VYZUN Platinum Pass</span>
-              <span className="text-xs text-muted-foreground">
-                 {p.prime ? "Active" : "$19.99 – $49.99/mo · Golden halo & premium hints"}
-              </span>
-            </span>
-          </button>
-          <button
-            onClick={() => setSheet("creator")}
-            className="glass-card flex items-center gap-3 p-4 text-left tap active:tap-active"
-          >
-            <Wallet2 className="h-5 w-5 text-cyan" />
-            <span>
-              <span className="block text-sm font-semibold">Creator Dashboard &amp; Earnings</span>
-              <span className="text-xs text-muted-foreground">Real-money earnings, payouts & analytics</span>
-            </span>
-          </button>
-        </div>
+        {isSelf && <div className="mt-4 space-y-2">
+          <Button variant="outline" onClick={() => setSheet("prime")} className="h-auto w-full justify-start gap-3 border-magenta/30 bg-glass py-2 text-left"><Crown className="text-gold" /><span className="min-w-0 flex-1"><span className="block text-xs font-semibold">VYZUN Platinum Pass</span><span className="block text-[10px] text-muted-foreground">$19.99 – $49.99/mo</span></span></Button>
+          <Button variant="outline" onClick={() => setSheet("creator")} className="h-auto w-full justify-start gap-3 border-cyan/30 bg-glass py-2 text-left"><Wallet2 className="text-cyan" /><span><span className="block text-xs font-semibold">Creator Dashboard</span><span className="block text-[10px] text-muted-foreground">Missions · earnings · analytics</span></span></Button>
+        </div>}
       </header>
 
       <main className="mx-auto mt-6 max-w-lg px-5">
-        <section className="mb-6 border-y border-glass-border py-5">
+        <section className="mb-5 border-y border-glass-border py-3">
           <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Crown className="h-5 w-5 text-gold" />Luxury Trophy Cabinet</h2>
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-3 grid grid-cols-3 gap-2">
             {[{ name: "Virtual Crown", price: "$49", icon: Crown }, { name: "Private Jet", price: "$199", icon: Plane }, { name: "Diamond Aura", price: "$499", icon: Gem }].map(({ name, price, icon: Icon }) => <Button key={name} variant="outline"
               onClick={() => setPaid({ title: name, price, description: `Send a ${name} digital gift to an eligible creator. No physical item. Gifts appear only after verified payment.` })}
-              className="h-auto min-h-32 flex-col whitespace-normal border-gold/30 bg-glass px-2 py-4 text-center">
-              <Icon className="mb-2 text-gold !size-8" /><span className="text-xs">{name}</span><span className="font-display font-bold text-gold">{price}</span>
+              className="h-auto min-h-20 flex-col whitespace-normal border-cyan/30 bg-gradient-vyzun px-2 py-2 text-center">
+              <Icon className="mb-1 text-primary-foreground !size-6" /><span className="text-[10px] text-primary-foreground">{name}</span>
             </Button>)}
           </div>
         </section>
         <div className="flex gap-2">
-          {(["reels", "aura", "scans"] as const).map((t) => (
-            <button
+          {(["posts", "reels", "aura"] as const).map((t) => (
+            <Button variant="outline"
               key={t}
               onClick={() => setTab(t)}
               className={cn(
@@ -187,10 +160,12 @@ function ProfilePage() {
                 tab === t && "bg-gradient-vyzun text-primary-foreground",
               )}
             >
-              {t === "aura" ? "Aura Cards" : t === "scans" ? "Scan History" : "Reels"}
-            </button>
+              {t === "aura" ? "Aura Cards" : t === "posts" ? "Posts" : "Reels"}
+            </Button>
           ))}
         </div>
+
+        {tab === "posts" && <div className="flex flex-col items-center gap-3 py-8 text-center"><MessageCircle className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">Your public posts live in Vibe Feed.</p><Button asChild className="bg-gradient-vyzun"><Link to="/secrets" search={{}}>Open Vibe Feed</Link></Button></div>}
 
         {tab === "reels" && (
           <div className="mt-4 flex flex-col items-center gap-3 py-8 text-center">
@@ -218,7 +193,7 @@ function ProfilePage() {
           </div>
         )}
 
-        {tab === "scans" && (
+        {tab === "aura" && state.scans.length > 0 && (
           <div className="mt-4 space-y-2">
             {state.scans.length === 0 && (
               <div className="flex flex-col items-center gap-3 py-8 text-center"><Camera className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">No scans yet.</p><Button asChild className="bg-gradient-vyzun"><Link to="/">Start Live Face Scan</Link></Button></div>
@@ -234,22 +209,9 @@ function ProfilePage() {
           </div>
         )}
 
-        <div className="mt-6 grid grid-cols-3 gap-3 text-center text-xs text-muted-foreground">
-          <div className="glass-card py-3">
-            <BarChart3 className="mx-auto mb-1 h-4 w-4" /> Analytics
-          </div>
-          <div className="glass-card py-3">
-            <Globe className="mx-auto mb-1 h-4 w-4" /> Language
-          </div>
-          <div className="glass-card py-3">
-            <Lock className="mx-auto mb-1 h-4 w-4" /> Privacy
-          </div>
-        </div>
-        <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-[11px] text-muted-foreground">
-          <TrendingUp className="h-3.5 w-3.5" /> Verification and Prime are separate on VYZUN.
-        </p>
       </main>
 
+      <ActionDialog title={qrOpen ? "Your VYZUN QR" : null} description="Share your anonymous inbox." onClose={() => setQrOpen(false)}>{qrLink && <><div className="mx-auto rounded-lg bg-primary-foreground p-4"><QRCodeSVG value={qrLink} size={200} /></div><p className="break-all text-xs text-cyan">{qrLink}</p><Button onClick={async () => { try { await navigator.clipboard.writeText(qrLink); setQrNotice("Link copied"); } catch { setQrNotice("Copy is unavailable. You can select the link above."); } }}>Copy Link</Button>{qrNotice && <p role="status" className="text-xs text-cyan">{qrNotice}</p>}</>}</ActionDialog>
       <PrimeSheet open={sheet === "prime"} onClose={() => setSheet(null)} />
       <ReelStudio open={studioOpen} onClose={() => setStudioOpen(false)} />
       <PaidActionSheet action={paid} onClose={() => setPaid(null)} />

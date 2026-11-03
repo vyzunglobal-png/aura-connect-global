@@ -77,7 +77,7 @@ export function CreatorDashboardSheet({ open, onClose }: { open: boolean; onClos
                 {isLoading && isAuthenticated ? (
                   <span className="inline-block h-5 w-20 animate-pulse rounded bg-muted" />
                 ) : (
-                  money(s.value)
+                  !isAuthenticated || isError || !data ? "—" : money(s.value)
                 )}
               </p>
               <p className="text-xs text-muted-foreground">{s.label}</p>
@@ -93,7 +93,7 @@ export function CreatorDashboardSheet({ open, onClose }: { open: boolean; onClos
               className="flex items-center justify-between rounded-xl border border-glass-border px-3 py-2 text-sm"
             >
               <span>{label}</span>
-              <span className="text-muted-foreground">{money(data?.bySource?.[key] ?? 0)}</span>
+              <span className="text-muted-foreground">{data && !isError ? money(data.bySource?.[key] ?? 0) : "—"}</span>
             </li>
           ))}
         </ul>

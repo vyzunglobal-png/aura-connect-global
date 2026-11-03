@@ -109,7 +109,7 @@ export const getCreatorSummary = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const [{ data: earnings }, { data: payouts }, { data: creator }] = await Promise.all([
+    const [{ data: earnings, error: earningsError }, { data: payouts, error: payoutsError }, { data: creator, error: creatorError }] = await Promise.all([
       supabase
         .from("creator_earnings")
         .select("source, state, net_amount, currency, created_at")
@@ -127,6 +127,7 @@ export const getCreatorSummary = createServerFn({ method: "GET" })
         .maybeSingle(),
     ]);
 
+    if (earningsError || payoutsError || creatorError) throw new Error("Creator accounting is unavailable.");
     const rows = earnings ?? [];
     const monthStart = new Date();
     monthStart.setUTCDate(1);

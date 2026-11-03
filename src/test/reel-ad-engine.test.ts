@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { withSponsoredSlots } from "@/lib/reel-ad-engine";
 
 describe("native reel ad cadence", () => {
+  it("places sponsorship at every fifth feed position after four organic reels", () => {
+    const feed = withSponsoredSlots(Array.from({ length: 12 }, (_, i) => i));
+    expect(feed.filter((item, index) => (index + 1) % 5 === 0).map(item => item.kind)).toEqual(["ad", "ad", "ad"]);
+  });
   it("inserts after every four reels without duplicating organic content", () => {
     const rows = Array.from({ length: 12 }, (_, i) => ({ id: i }));
     const feed = withSponsoredSlots(rows);
