@@ -40,7 +40,7 @@ function ReelsPage() {
   const { session } = useVyzunSession();
   const cache = useQueryClient();
   const [category, setCategory] = useState<ReelCategory>("For You");
-  const feed = useReelFeed(category, session?.user.id);
+  const feed = useReelFeed(category, session?.user.id, false, targetReel);
   useEffect(() => { if (targetReel && feed.data?.length) document.getElementById(`reel-${targetReel}`)?.scrollIntoView({ block: "start" }); }, [targetReel, feed.data]);
   const [studio, setStudio] = useState(false);
   const [products, setProducts] = useState(false);
