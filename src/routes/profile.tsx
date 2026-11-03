@@ -168,7 +168,7 @@ function ProfilePage() {
           ))}
         </div>
 
-        {tab === "posts" && <div className="flex flex-col items-center gap-3 py-8 text-center"><MessageCircle className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">Your public posts live in Vibe Feed.</p><Button asChild className="bg-gradient-vyzun"><Link to="/secrets" search={{ to: undefined }}>Open Vibe Feed</Link></Button></div>}
+        {tab === "posts" && <div className="flex flex-col items-center gap-3 py-8 text-center"><MessageCircle className="h-8 w-8 text-cyan" /><p className="text-sm text-muted-foreground">Your public posts live in Vibe Feed.</p><Button asChild className="bg-gradient-vyzun"><Link to="/secrets" search={{}}>Open Vibe Feed</Link></Button></div>}
 
         {tab === "reels" && (
           <div className="mt-4 flex flex-col items-center gap-3 py-8 text-center">
