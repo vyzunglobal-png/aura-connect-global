@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Gift, ImagePlus, Mic, Send, Smile, Square, Swords, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActionDialog } from "./ActionDialog";
+import { validChatPreview } from "@/lib/chat-media";
 
 /** Local drafts only until encrypted, moderated participant delivery is activated. */
 export function ChatComposer({ onBattle, onLoot }: { onBattle: () => void; onLoot: () => void }) {
@@ -15,11 +16,11 @@ export function ChatComposer({ onBattle, onLoot }: { onBattle: () => void; onLoo
   const recorder = useRef<MediaRecorder | null>(null);
   const stream = useRef<MediaStream | null>(null);
   const alive = useRef(true);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; recorder.current?.stop(); stream.current?.getTracks().forEach(track => track.stop()); }; }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; if (recorder.current?.state === "recording") recorder.current.stop(); stream.current?.getTracks().forEach(track => track.stop()); }; }, []);
   useEffect(() => () => { if (media) URL.revokeObjectURL(media.url); }, [media]);
   function preview(file?: File) {
     if (!file) return;
-    if (!/^(image|video|audio)\//.test(file.type) || file.size > 20 * 1024 * 1024) { setNotice("Choose a photo, video or audio file under 20 MB."); return; }
+    if (!validChatPreview(file)) { setNotice("Choose a nonempty photo, video or audio file up to 20 MB."); return; }
     setMedia({ url: URL.createObjectURL(file), type: file.type, name: file.name });
   }
   async function record() {

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bookmark, Flame, Gift, Heart, MessageSquare, Music2, Plus, Repeat2, Share2, ShoppingBag, Swords, Video, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/reels")({
+  validateSearch: (search: Record<string, unknown>): { reel?: string } => typeof search['reel'] === "string" && /^[a-f0-9-]{36}$/i.test(search['reel']) ? { reel: search['reel'] } : {},
   head: () => ({
     meta: [
       { title: "VYZUN Reels — Vertical Video Feed" },
@@ -35,10 +36,12 @@ export const Route = createFileRoute("/reels")({
 });
 
 function ReelsPage() {
+  const { reel: targetReel } = Route.useSearch();
   const { session } = useVyzunSession();
   const cache = useQueryClient();
   const [category, setCategory] = useState<ReelCategory>("For You");
   const feed = useReelFeed(category, session?.user.id);
+  useEffect(() => { if (targetReel && feed.data?.length) document.getElementById(`reel-${targetReel}`)?.scrollIntoView({ block: "start" }); }, [targetReel, feed.data]);
   const [studio, setStudio] = useState(false);
   const [products, setProducts] = useState(false);
   const [paid, setPaid] = useState<PaidAction | null>(null);
@@ -71,7 +74,7 @@ function ReelsPage() {
       <span className="font-display text-sm font-bold text-cyan">REELS</span><Button onClick={() => setStudio(true)} className="ml-auto h-8 bg-gradient-vyzun px-3 text-xs"><Plus />Create Reel</Button>
     </header>
     <main className="h-full snap-y snap-mandatory overflow-y-auto overscroll-contain pb-24">
-      {!feed.data?.length && <section className="flex min-h-[calc(100dvh-4.5rem)] flex-col items-center justify-center gap-4 px-5 pb-24 pt-28 text-center"><Video className="h-14 w-14 text-cyan" /><h1 className="font-display text-xl">{feed.isLoading ? "Loading Reels…" : feed.isError ? "Reels couldn’t connect" : category === "Following" && !session ? "Your Following feed" : "No published Reels yet"}</h1>{feed.isLoading ? <div role="status" className="h-20 w-56 animate-pulse rounded-lg bg-muted" /> : feed.isError ? <Button variant="outline" onClick={() => void feed.refetch()}>Retry</Button> : <Button className="bg-gradient-vyzun" onClick={() => setStudio(true)}>Create Reel</Button>}{category === "Following" && !session && <p className="text-sm text-muted-foreground">Sign in to see creators you follow.</p>}</section>}
+      {!feed.data?.length && <section className="flex min-h-[calc(100dvh-4.5rem)] flex-col items-center justify-center gap-4 px-5 pb-24 pt-28 text-center"><Video className="h-14 w-14 text-cyan" /><h1 className="font-display text-xl">{feed.isLoading ? "Loading Reels…" : feed.isError ? "Reels couldn’t connect" : category === "Following" && !session ? "Your Following feed" : "No published Reels yet"}</h1>{feed.isLoading ? <div role="status" className="h-20 w-56 animate-pulse rounded-lg bg-muted" /> : feed.isError ? <Button variant="outline" onClick={() => void feed.refetch()}>Retry</Button> : null}{category === "Following" && !session && <p className="text-sm text-muted-foreground">Sign in to see creators you follow.</p>}</section>}
       {withSponsoredSlots(feed.data ?? []).map(item => item.kind === "ad" ? <section key={`ad-${item.slot}`} data-sponsored-slot={item.slot} className="flex h-[calc(100dvh-4.5rem)] snap-start flex-col items-center justify-center gap-4 px-6 pb-24 pt-28 text-center"><span className="text-xs text-gold">Sponsored · House promotion</span><Megaphone className="h-12 w-12 text-cyan" /><h2 className="font-display text-xl">VYZUN for brands</h2><Button onClick={() => setPaid({ title: "Native Reel Sponsorship", price: "Custom campaign quote", description: "External sponsored inventory and rewarded payouts are not connected. No cash reward is issued." })}>Explore sponsorship</Button></section> : <section key={item.reel.id} className="relative h-[calc(100dvh-4.5rem)] w-full snap-start overflow-hidden bg-secondary">
         <video src={item.reel.video_url ?? undefined} poster={item.reel.thumbnail_url ?? undefined} muted playsInline controls preload="metadata" className="absolute inset-0 h-full w-full object-contain" onEnded={() => setEnded(value => ({ ...value, [item.reel.id]: true }))} />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/70 to-transparent" />
