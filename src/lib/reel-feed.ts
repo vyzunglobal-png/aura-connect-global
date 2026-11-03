@@ -1,16 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const REEL_CATEGORIES = ["Following", "For You", "Trending", "New", "Comedy"] as const;
+export const REEL_CATEGORIES = ["For You", "Vibe With", "Trending", "New", "Comedy"] as const;
 export type ReelCategory = typeof REEL_CATEGORIES[number];
 
 export function useReelFeed(category: ReelCategory, userId?: string, own = false, targetId?: string) {
-  return useQuery({ queryKey: ["reel-feed", category, userId, own, targetId], enabled: category !== "Following" || !!userId, retry: 1, staleTime: 30_000,
+  return useQuery({ queryKey: ["reel-feed", category, userId, own, targetId], enabled: category !== "Vibe With" || !!userId, retry: 1, staleTime: 30_000,
     queryFn: async () => {
       let query = supabase.from("reels").select("id,creator_id,caption,hashtags,video_url,thumbnail_url,audio_label,views_count,category,duration_seconds").eq("is_published", true).eq("moderation_state", "approved");
       if (own && userId) query = query.eq("creator_id", userId);
       if (category === "Comedy") query = query.eq("category", "comedy");
-      if (category === "Following" && userId) {
+      if (category === "Vibe With" && userId) {
         const { data, error } = await supabase.from("social_connections").select("following_id").eq("follower_id", userId);
         if (error) throw error;
         if (!data?.length) return [];
