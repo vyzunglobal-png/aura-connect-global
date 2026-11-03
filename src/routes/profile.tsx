@@ -2,16 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   BadgeCheck,
-  BarChart3,
   Camera,
   Crown,
-  Globe,
-  Lock,
   MessageCircle,
   QrCode,
   Settings,
   Sparkles,
-  TrendingUp,
   Wallet2,
   Gem,
   Plane,
@@ -63,7 +59,8 @@ function ProfilePage() {
   const [paid, setPaid] = useState<PaidAction | null>(null);
   const [qrOpen, setQrOpen] = useState(false);
   const [qrLink, setQrLink] = useState("");
-  useEffect(() => { setQrLink(secretDropLink(window.location.origin, state.profile.username)); }, [state.profile.username]);
+  const [qrNotice, setQrNotice] = useState<string | null>(null);
+  useEffect(() => { setQrLink(secretDropLink(window.location.origin, u ?? state.profile.username)); }, [state.profile.username, u]);
   const p = state.profile;
   const isSelf = !u || u.toLowerCase() === p.username.toLowerCase();
   const viewedName = isSelf ? p.displayName : (u ?? p.username);
@@ -112,10 +109,10 @@ function ProfilePage() {
           ) : (
             <>
               <VibeWithButton username={viewedHandle} />
-              <button className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl border border-glass-border py-2.5 text-sm tap active:tap-active">
+              <Button asChild variant="outline" className="flex min-w-0 flex-1"><Link to="/messages">
                 <MessageCircle className="h-4 w-4 shrink-0" />
                 <span className="truncate">Message</span>
-              </button>
+              </Link></Button>
             </>
           )}
           <Button variant="outline" onClick={() => setQrOpen(true)}
@@ -155,7 +152,7 @@ function ProfilePage() {
         </section>
         <div className="flex gap-2">
           {(["posts", "reels", "aura"] as const).map((t) => (
-            <button
+            <Button variant="outline"
               key={t}
               onClick={() => setTab(t)}
               className={cn(
@@ -164,7 +161,7 @@ function ProfilePage() {
               )}
             >
               {t === "aura" ? "Aura Cards" : t === "posts" ? "Posts" : "Reels"}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -214,7 +211,7 @@ function ProfilePage() {
 
       </main>
 
-      <ActionDialog title={qrOpen ? "Your VYZUN QR" : null} description="Share your anonymous inbox." onClose={() => setQrOpen(false)}>{qrLink && <><div className="mx-auto rounded-lg bg-primary-foreground p-4"><QRCodeSVG value={qrLink} size={200} /></div><p className="break-all text-xs text-cyan">{qrLink}</p><Button onClick={() => void navigator.clipboard.writeText(qrLink)}>Copy Link</Button></>}</ActionDialog>
+      <ActionDialog title={qrOpen ? "Your VYZUN QR" : null} description="Share your anonymous inbox." onClose={() => setQrOpen(false)}>{qrLink && <><div className="mx-auto rounded-lg bg-primary-foreground p-4"><QRCodeSVG value={qrLink} size={200} /></div><p className="break-all text-xs text-cyan">{qrLink}</p><Button onClick={async () => { try { await navigator.clipboard.writeText(qrLink); setQrNotice("Link copied"); } catch { setQrNotice("Copy is unavailable. You can select the link above."); } }}>Copy Link</Button>{qrNotice && <p role="status" className="text-xs text-cyan">{qrNotice}</p>}</>}</ActionDialog>
       <PrimeSheet open={sheet === "prime"} onClose={() => setSheet(null)} />
       <ReelStudio open={studioOpen} onClose={() => setStudioOpen(false)} />
       <PaidActionSheet action={paid} onClose={() => setPaid(null)} />
