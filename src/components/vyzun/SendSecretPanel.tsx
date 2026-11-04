@@ -51,17 +51,17 @@ export function SendSecretPanel({ username, initialTo = "" }: { username: string
 
   return (
     <div className="space-y-3">
-      <div className="glass-card p-4">
-        <p className="text-xs text-muted-foreground">Your anonymous VYZUN link</p>
-        <p className="text-gradient-secret mt-1 break-all font-semibold">{origin ? `${new URL(origin).host}/ask/@${handle}` : `/ask/@${handle}`}</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={copy} disabled={!origin} className="h-auto border-magenta/60 py-2.5 text-sm text-magenta shadow-[var(--glow-neon)]">
-            <Copy className="h-4 w-4" /> Copy Link
-          </Button>
-          <Button onClick={share} disabled={!origin} className="bg-gradient-secret h-auto py-2.5 text-sm text-primary-foreground">
-            <Share2 className="h-4 w-4" /> Share Link
-          </Button>
+      <div className="glass-card flex items-center gap-3 p-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Your anonymous link</p>
+          <p className="text-gradient-secret truncate text-sm font-bold">{origin ? `${new URL(origin).host}/ask/@${handle}` : `/ask/@${handle}`}</p>
         </div>
+        <Button variant="outline" size="icon" onClick={copy} disabled={!origin} aria-label="Copy link" className="squircle h-10 w-10 shrink-0 border-magenta/60 text-magenta shadow-[var(--glow-neon)]">
+          <Copy className="h-4 w-4" />
+        </Button>
+        <Button size="icon" onClick={share} disabled={!origin} aria-label="Share link" className="bg-gradient-secret squircle h-10 w-10 shrink-0 text-primary-foreground shadow-[var(--glow-neon)]">
+          <Share2 className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="glass-card p-4">
