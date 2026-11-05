@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, BadgeCheck, MessageCircle, Phone, Search, Send, Sparkles, Video } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MessageCircle, Phone, Search, Send, Video } from "lucide-react";
+import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useVyzunSession } from "@/hooks/use-vyzun-session";
@@ -15,7 +16,7 @@ import { PaidActionSheet, type PaidAction } from "./PaidActionSheet";
 const TASKS = [{ key: "hooks", label: "Video hooks" }, { key: "scripts", label: "Scripts" }, { key: "bio", label: "Bio" }, { key: "safety", label: "Brand safety" }] as const;
 type Task = typeof TASKS[number]["key"];
 
-const ICEBREAKERS = ["How do I reveal a crush?", "What is Aura Score?", "How to pin on Campus Map?"] as const;
+const ICEBREAKERS = ["How do I reveal a crush?", "What is Aura Score?", "How to pin on Campus Map?", "What is Vibe Clash?"] as const;
 
 type ChatRow = { id: string; kind: string; last_message_at: string | null };
 type PeopleMap = Record<string, { username: string; avatar_url: string | null }>;
@@ -108,10 +109,16 @@ export function MessagesView() {
 
   return <section className="space-y-4">
     {!active ? <>
-      <Button variant="outline" onClick={() => openAI()} className="h-auto w-full justify-start gap-3 border-magenta/60 p-4 text-left shadow-[var(--glow-neon)]">
-        <span className="bg-gradient-secret squircle grid h-11 w-11 shrink-0 place-items-center text-primary-foreground"><Sparkles className="h-5 w-5" /></span>
-        <span className="min-w-0"><span className="flex items-center gap-2 font-semibold">✨ VYZUN AI <BadgeCheck className="h-4 w-4 text-cyan" /></span><span className="block text-xs text-muted-foreground">Verified Vibe Guide · always pinned first</span></span>
-      </Button>
+      <button onClick={() => openAI()} className="glass-card relative w-full p-4 text-left shadow-[var(--glow-neon)] tap active:tap-active">
+        <span aria-hidden className="bg-gradient-secret absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-primary-foreground">PINNED ›</span>
+        <div className="flex items-center gap-3">
+          <span className="squircle-glow grid h-14 w-14 shrink-0 place-items-center overflow-hidden bg-background p-2"><Logo className="h-full w-full" /></span>
+          <span className="min-w-0">
+            <span className="flex items-center gap-2 font-semibold">✨ VYZUN AI <BadgeCheck className="h-4 w-4 text-cyan" /></span>
+            <span className="block text-xs text-muted-foreground">Verified Vibe Guide · always pinned first</span>
+          </span>
+        </div>
+      </button>
       <div className="flex flex-wrap gap-2" aria-label="Icebreaker prompts">{ICEBREAKERS.map(prompt => <button key={prompt} onClick={() => openAI(prompt)} className="rounded-full border border-glass-border px-3 py-1.5 text-xs tap active:tap-active hover:border-cyan/60">{prompt}</button>)}</div>
       <label className="flex items-center gap-2 rounded-xl border border-glass-border px-3 py-2.5">
         <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
