@@ -31,3 +31,9 @@
 - [ ] Affiliate sales: approved merchant product inventory required; never fabricate sale commissions.
 
 Store approval, complete privacy compliance and production safety certification are not established by these UI changes.
+## UI refinement pass (Nov 5)
+- [ ] Reels: unified seamless background, remove floating REELS text, neon header, glowing engagement icons, purple-pink + Vibe With.
+- [ ] Scan: Double-Blind Crush card reduced to sign-in + $4.99 reveal buttons only.
+- [ ] Secrets/Campus Map: Battle Pass card moved above Daily Clout Crown Auction; messages icon top-right; floating chats bar removed.
+- [ ] Messages: AI Signature Brand Card with logo squircle + glow ring, icebreaker pills, search, squircle DPs, PINNED badge.
+- [ ] Links: display vyzun.app/ask/@username short form (copy still uses working current-origin link).
