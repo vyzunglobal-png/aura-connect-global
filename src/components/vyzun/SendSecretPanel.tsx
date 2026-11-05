@@ -54,7 +54,7 @@ export function SendSecretPanel({ username, initialTo = "" }: { username: string
       <div className="glass-card flex items-center gap-3 p-3">
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Your anonymous link</p>
-          <p className="text-gradient-secret truncate text-sm font-bold">{origin ? `${new URL(origin).host}/ask/@${handle}` : `/ask/@${handle}`}</p>
+          <p className="text-gradient-secret truncate text-sm font-bold" title={link}>vyzun.app/ask/@{handle}</p>
         </div>
         <Button variant="outline" size="icon" onClick={copy} disabled={!origin} aria-label="Copy link" className="squircle h-10 w-10 shrink-0 border-magenta/60 text-magenta shadow-[var(--glow-neon)]">
           <Copy className="h-4 w-4" />

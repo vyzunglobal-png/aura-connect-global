@@ -1,4 +1,4 @@
-import { Bell, Crown, Gift, Ghost, Megaphone, MapPin, Radio, Sparkles, Store, Minus, Plus, RotateCcw } from "lucide-react";
+import { Bell, Crown, Gift, Ghost, Megaphone, MapPin, Radio, Sparkles, Store, Swords, Minus, Plus, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { PaidAction } from "./PaidActionSheet";
@@ -19,6 +19,24 @@ export function CampusRadar({ onPay }: { onPay: (a: PaidAction) => void }) {
   const [zoom, setZoom] = useState(1);
   return (
     <section className="space-y-3">
+      <button
+        onClick={() =>
+          onPay({
+            title: "Inter-Campus Battle Pass",
+            price: "$1.99",
+            description: "Join an inter-campus Aura event. Participation activates only after verified payment; no global individual leaderboard.",
+          })
+        }
+        className="glass-card flex w-full items-center gap-3 px-4 py-3 text-left tap active:tap-active"
+      >
+        <Swords className="h-5 w-5 shrink-0 text-magenta" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">Inter-Campus Battle Pass</span>
+          <span className="text-xs text-muted-foreground">Join your campus rivalry for $1.99</span>
+        </span>
+        <span className="rounded-full bg-gradient-vyzun px-2.5 py-1 text-[11px] font-bold text-primary-foreground">JOIN</span>
+      </button>
+
       <button
         onClick={() =>
           onPay({
