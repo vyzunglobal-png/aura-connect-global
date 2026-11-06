@@ -37,3 +37,8 @@ Store approval, complete privacy compliance and production safety certification 
 - [ ] Secrets/Campus Map: Battle Pass card moved above Daily Clout Crown Auction; messages icon top-right; floating chats bar removed.
 - [ ] Messages: AI Signature Brand Card with logo squircle + glow ring, icebreaker pills, search, squircle DPs, PINNED badge.
 - [ ] Links: display vyzun.app/ask/@username short form (copy still uses working current-origin link).
+
+## Living Aura / Reels header update (Nov 6)
+- [ ] Aura card: dynamic daily vibe treatment, daily prompt, streak display, premium 9:16 visual polish, and story share row.
+- [ ] Reels header: remove category tabs; keep only transparent top-right Create Reel action.
+- [ ] Keep activity-based scoring, notifications, and streak increments truthful to connected data; no fabricated activity or delivery.
