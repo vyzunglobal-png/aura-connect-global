@@ -23,3 +23,4 @@
 - Reuse ActionDialog for contextual unavailable-action states so inactive services never produce false rewards or results.
 - Keep AI provider helpers server-only and invoke the authenticated companion function with explicit creative context; AI never receives private chat history implicitly.
 - Recover deployment-stale route chunks with one session-scoped document refresh per minute; repeated failures must remain visible and manually retryable rather than reload-looping.
+- Keep date-based Aura variation and streak arithmetic in pure browser-safe helpers so the UI can refresh at local midnight without fabricating activity data.

@@ -1,6 +1,7 @@
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { BadgeCheck, Crown, Sparkles } from "lucide-react";
 import type { AuraCard } from "@/lib/vyzun-store";
+import { getDailyAura } from "@/lib/aura-daily";
 import { Logo, Wordmark } from "./Logo";
 import { cn } from "@/lib/utils";
 
@@ -36,10 +37,24 @@ function Gauge({ value, label, color }: { value: number; label: string; color: s
 
 export const AuraCardView = forwardRef<
   HTMLElement,
-  { card: AuraCard; username: string; prime?: boolean; className?: string }
->(function AuraCardView({ card, username, prime, className }, ref) {
+  { card: AuraCard; username: string; prime?: boolean; streak?: number; className?: string }
+>(function AuraCardView({ card, username, prime, streak = 0, className }, ref) {
   const ultra = card.rarity === "Legendary" || card.rarity === "Mythic";
   const quote = card.lines[0] ?? card.headline;
+  const [daily, setDaily] = useState({ score: card.score, prompt: "What small win deserves a little more credit today?" });
+
+  useEffect(() => {
+    const refresh = () => {
+      const now = new Date();
+      const day = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      setDaily(getDailyAura(card.id, card.score, day));
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 100);
+      return window.setTimeout(refresh, Math.max(1000, midnight.getTime() - now.getTime()));
+    };
+    const timer = refresh();
+    return () => window.clearTimeout(timer);
+  }, [card.id, card.score]);
 
   return (
     <article ref={ref} className={cn("chamfer relative mt-4 aspect-[9/16] w-full bg-gradient-to-br from-violet via-cyan to-violet p-[2px]", className)}>
@@ -50,7 +65,7 @@ export const AuraCardView = forwardRef<
             <div className="pointer-events-none absolute -top-16 left-1/2 h-48 w-48 -translate-x-1/2 rounded-full bg-violet/30 blur-3xl" />
 
             <header className="relative flex items-center justify-between">
-              <p className="text-xs font-medium">@{username}</p>
+              <div><p className="text-xs font-medium">@{username}</p><p className="text-[9px] uppercase text-muted-foreground">24-hour live vibe</p></div>
               {prime && (
                 <span className="flex items-center gap-1 rounded-full bg-gradient-vyzun px-2 py-0.5 text-[9px] font-semibold text-primary-foreground">
                   <BadgeCheck className="h-3 w-3" /> PRIME
@@ -82,8 +97,9 @@ export const AuraCardView = forwardRef<
             </div>
 
             <div className="relative mt-3 text-center">
-              <p className="font-display text-5xl font-bold leading-none">{card.score}%</p>
+              <p className="font-display text-5xl font-bold leading-none">{daily.score}%</p>
               <p className="text-gradient font-display text-xl font-semibold">{card.headline}</p>
+              <p className="mt-1 inline-flex items-center gap-1 rounded-full border border-gold/40 bg-background/50 px-2 py-1 text-[10px] font-semibold text-gold"><span aria-hidden>🔥</span> {streak} day{streak === 1 ? "" : "s"} · share streak</p>
               <p className="text-[10px] text-muted-foreground">Top {card.percentile}% aura percentile · entertainment reading</p>
             </div>
 
@@ -98,9 +114,10 @@ export const AuraCardView = forwardRef<
               ))}
             </div>
 
-            <blockquote className="relative mt-3 rounded-2xl border border-glass-border bg-foreground/5 px-3 py-2 text-center text-[12px] italic leading-snug backdrop-blur-md">
-              “{quote}”
-            </blockquote>
+            <div className="relative mt-3 space-y-2">
+              <blockquote className="rounded-xl border border-glass-border bg-foreground/5 px-3 py-2 text-center text-[12px] italic leading-snug backdrop-blur-md">“{quote}”</blockquote>
+              <p className="rounded-xl border border-cyan/25 bg-background/40 px-3 py-2 text-center text-[10px] leading-snug"><span className="mb-1 block font-semibold text-cyan">CAMPUS MOOD PROMPT</span>{daily.prompt}</p>
+            </div>
 
             <footer className="relative mt-auto flex items-center justify-between pt-3">
               <span className="text-xs font-semibold">Beat my Aura ➔ VYZUN</span>

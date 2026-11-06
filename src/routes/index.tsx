@@ -16,6 +16,7 @@ import { CrushMatcher } from "@/components/vyzun/CrushMatcher";
 import { useVyzun, type AuraCard } from "@/lib/vyzun-store";
 import { downloadDataUrl, renderNodeToPng, shareImage } from "@/lib/aura-share";
 import { cn } from "@/lib/utils";
+import { recordAuraShare, type AuraStreak } from "@/lib/aura-daily";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -96,6 +97,7 @@ function ScanPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "share" | "download" | "post">(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [auraStreak, setAuraStreak] = useState<AuraStreak | null>(null);
   const cardRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -110,6 +112,12 @@ function ScanPage() {
       if (scanTimerRef.current) clearTimeout(scanTimerRef.current);
     };
   }, []);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`vyzun.aura-streak.${state.profile.username}`);
+      if (saved) setAuraStreak(JSON.parse(saved) as AuraStreak);
+    } catch { /* local streak is optional */ }
+  }, [state.profile.username]);
 
   async function requestCamera() {
     setCameraError(null);
@@ -178,6 +186,13 @@ function ScanPage() {
         out.dataUrl,
         `My VYZUN aura is ${card.score}% — ${card.rarity}. Beat my Aura → ${window.location.origin}/?ref=${encodeURIComponent(state.profile.username)}&aura=${encodeURIComponent(card.id)}`,
       );
+      if (result === "shared") {
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        const next = recordAuraShare(auraStreak, today);
+        setAuraStreak(next);
+        try { localStorage.setItem(`vyzun.aura-streak.${state.profile.username}`, JSON.stringify(next)); } catch { /* device storage may be unavailable */ }
+      }
       if (result === "downloaded") setNotice("Sharing isn’t available here — the image was saved instead.");
     } catch {
       setNotice("Couldn’t create the image. Please try again.");
@@ -312,6 +327,7 @@ function ScanPage() {
               card={card}
               username={state.profile.username}
               prime={state.profile.prime}
+              streak={auraStreak?.count ?? 0}
                className="aura-hologram"
             />
              <Button
@@ -320,7 +336,7 @@ function ScanPage() {
                className="mt-4 h-auto w-full whitespace-normal rounded-xl bg-gradient-vyzun py-3 font-semibold text-primary-foreground tap active:tap-active disabled:opacity-60"
             >
               <Share2 className="h-4 w-4" />
-                {busy === "share" ? "Preparing image…" : "✨ Share to IG / Snapchat / TikTok"}
+                {busy === "share" ? "Preparing story…" : "✨ Share to Story"}
              </Button>
              <p className="mt-2 text-center text-xs text-muted-foreground">Entertainment reading · not a measured personality or campus ranking.</p>
             <div className="mt-3 grid grid-cols-2 gap-3">
