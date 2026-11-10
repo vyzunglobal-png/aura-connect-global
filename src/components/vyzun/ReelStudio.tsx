@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Plus, Play, RotateCw, Heart, Flame, MessageCircle, Swords, Share2, Music } from 'lucide-react';
 
-export default function ReelsTab() {
+export function ReelStudio() {
   return (
     <div className="relative w-full h-screen bg-[#070614] text-white flex flex-col justify-between overflow-hidden">
       {/* Background Ambient Glow */}
