@@ -12,7 +12,7 @@ const schema = z.object({
   body: z.string().trim().min(1, "Write a message").max(500, "Max 500 characters"),
 });
 
-export default function SecretsTab({ username = "vyzuner", initialTo = "" }: { username?: string; initialTo?: string }) {
+export function SendSecretPanel({ username = "vyzuner", initialTo = "" }: { username?: string; initialTo?: string }) {
   const { session, profile } = useVyzunSession();
   const handle = profile?.username ?? username;
   const [origin, setOrigin] = useState("");
